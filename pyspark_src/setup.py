@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 # long_description = "This is a long description of my pkg"
 
 setup(
-    name="pyspark-recom-engine",
+    name="pyspark_recom_engine",
     version="0.1",
     author="Charx, Michael, Ankit",
     author_email="carlos.huertaso@udlap.mx",

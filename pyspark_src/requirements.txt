@@ -1,0 +1,4 @@
+Markdown==3.0.1
+py4j==0.10.7
+pyspark==2.4.0
+pytest==4.3.0

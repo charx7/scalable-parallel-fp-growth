@@ -4,3 +4,4 @@
 __pycache__
 /pyspark/build
 /pyspark/dist
+.pytest_cache
