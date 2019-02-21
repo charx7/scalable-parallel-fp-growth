@@ -1,0 +1,9 @@
+/dist/
+/build/
+*.egg-info
+__pycache__
+pyspark_src/pyspark/build
+pyspark_src/pyspark/dist
+.pytest_cache
+pyspark_src/dependencies/
+pyspark_src/dependencies.zip
