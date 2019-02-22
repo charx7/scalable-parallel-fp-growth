@@ -4,7 +4,8 @@ help:
 	@echo "start-cluster - Will run the built docker containers"
 	@echo "submit-app    - Will submit the python prebuilt app into the cluster"
 	@echo "clean-cluster - Will stop and remove the containers from your system"
-	
+	@echo "package-pyspark-app: - Will package a python egg to submit into spark"
+
 build-docker:
 	@echo "Building the docker images..."
 	@docker build -t spark-master ./spark_master/
@@ -24,12 +25,17 @@ start-cluster:
 	@sleep 2
 	@xdg-open http://localhost:8080
 
+package-pyspark-app:
+	@echo "Packaging the python egg to be submitted alongside the job..."
+	@(cd ./pyspark_src && python setup.py bdist_egg)
+
 submit-app:
+	make package-pyspark-app
 	@echo "Submiting app into the cluster"
 	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master -d submit-pyspark-job sleep 10000
 
 clean-cluster:
-	@echo "Removing images..."
+	@echo "Removing containers..."
 	@docker stop spark-master
 	@docker stop spark-worker-1
 	@docker stop pyspark-app
