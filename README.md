@@ -32,6 +32,7 @@ docker build --rm -t submit-pyspark-job ./pyspark_src/
 ```
 Run the submit container
 ```
+docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master -d submit-pyspark-job sleep 10000
 
 ```
 

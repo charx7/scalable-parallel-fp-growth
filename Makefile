@@ -2,12 +2,14 @@ help:
 	@echo "start-cluster - Will start an spark-master with a single slave"
 	@echo "build-docker  - Will build the docker images on your systems with the required params"
 	@echo "start-cluster - Will run the built docker containers"
+	@echo "submit-app    - Will submit the python prebuilt app into the cluster"
 	@echo "clean-cluster - Will stop and remove the containers from your system"
-	  
+	
 build-docker:
 	@echo "Building the docker images..."
 	@docker build -t spark-master ./spark_master/
 	@docker build --rm -t bde/spark-app ./pyspark_worker/
+	@docker build --rm -t submit-pyspark-job ./pyspark_src/
 
 start-cluster:
 	@echo "Starting the Spark Cluster..."
@@ -22,8 +24,13 @@ start-cluster:
 	@sleep 2
 	@xdg-open http://localhost:8080
 
+submit-app:
+	@echo "Submiting app into the cluster"
+	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master -d submit-pyspark-job sleep 10000
+
 clean-cluster:
 	@echo "Removing images..."
 	@docker stop spark-master
 	@docker stop spark-worker-1
+	@docker stop pyspark-app
 	@docker ps -a
