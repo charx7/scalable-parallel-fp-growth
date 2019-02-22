@@ -14,6 +14,3 @@ ENV SPARK_MASTER_PORT "7077"
 
 #### Commands for the submit image ####
 #ENV SPARK_APPLICATION_ARGS
-
-# On this case change the python entrypoint
-#ENV SPARK_APPLICATION_PYTHON_LOCATION /pyspark_recom_engine/jobs/sampleJob.py

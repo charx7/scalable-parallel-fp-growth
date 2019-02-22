@@ -24,6 +24,17 @@ Run the image that has the job specified on the Dockerfile
 docker run --rm --name spark-worker-1 -p 8081:8081 --link spark-master:spark-master -e ENABLE_INIT_DAEMON=false -d bde/spark-app #sleep 10000 command when docker is being a rebel
 ```
 
+## Submit a Pyspark Job
+After build and run of Spark Master -> Slaves
+Build the submit container
+```
+docker build --rm -t submit-pyspark-job ./pyspark_src/
+```
+Run the submit container
+```
+
+```
+
 ## Alternative
 Build the docker cluster using the Makefil
 ```
