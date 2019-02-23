@@ -10,7 +10,6 @@ build-docker:
 	@echo "Building the docker images..."
 	@docker build -t spark-master ./spark_master/
 	@docker build --rm -t bde/spark-app ./pyspark_worker/
-	@docker build --rm -t submit-pyspark-job ./pyspark_src/
 
 start-cluster:
 	@echo "Starting the Spark Cluster..."
@@ -30,9 +29,12 @@ package-pyspark-app:
 	@(cd ./pyspark_src && python setup.py bdist_egg)
 
 submit-app:
+	@echo "Package python app -> Built Docker Image -> Run the Submit container"
 	make package-pyspark-app
 	@echo "Submiting app into the cluster"
-	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master -d submit-pyspark-job sleep 10000
+	@docker build --rm -t submit-pyspark-job ./pyspark_src/
+	@echo "Image built, now running the submit container" 
+	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master -d submit-pyspark-job 
 
 clean-cluster:
 	@echo "Removing containers..."

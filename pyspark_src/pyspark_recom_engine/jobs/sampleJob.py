@@ -1,5 +1,6 @@
 from pyspark_recom_engine.spark import get_spark
 #from pyspark.sql import SparkSession
+#from pyspark import SparkContext, SparkConf
 
 def main():
     '''
@@ -9,10 +10,10 @@ def main():
     #             .master("local")
     #             .appName("recom-engine")
     #             .getOrCreate())
+    
+    spark_context = get_spark()
 
-    spark = get_spark()
-    sc = spark.sparkContext
-    rdd = sc.parallelize([1,2,3,4,5,6,7])
+    rdd = spark_context.parallelize([1,2,3,4,5,6,7])
     
     print('The count is: ',rdd.count())
 
