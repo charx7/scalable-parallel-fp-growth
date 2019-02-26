@@ -13,6 +13,18 @@ docker run --rm  --name spark-master -p 4040:4040 -p 8080:8080 -p 7077:7077 -h s
 
 ```
 
+## Run the mongodb container
+Run the mongo db inside a container where spark will read our data
+
+```
+docker run --rm --name spark-mongo -p 27017:27017 --link spark-master:spark-master -v $(pwd)/data:/data/db/ -d mongo    
+```
+
+To execute the mongo shell inside the container:
+```
+docker exec -it spark-mongo /bin/bash  
+```
+
 ## Build the Spark-Slaves
 Build the slaves image
 ```

@@ -5,6 +5,12 @@ help:
 	@echo "submit-app    - Will submit the python prebuilt app into the cluster"
 	@echo "clean-cluster - Will stop and remove the containers from your system"
 	@echo "package-pyspark-app: - Will package a python egg to submit into spark"
+	@echo "start-mongo:  - Will start a mongodb container with a volume on ./data/"
+
+# Here the $(shell ) tag is needed to execute shell comands
+start-mongo:
+	@echo "Creating the mongo container..."
+	@docker run --rm --name spark-mongo -p 27017:27017 --link spark-master:spark-master -v $(shell pwd)/data:/data/db/ -d mongo
 
 build-docker:
 	@echo "Building the docker images..."
