@@ -1,1 +1,0 @@
-from .text import say_hello
