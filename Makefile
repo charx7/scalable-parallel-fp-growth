@@ -10,7 +10,7 @@ help:
 # Here the $(shell ) tag is needed to execute shell comands
 start-mongo:
 	@echo "Creating the mongo container..."
-	@docker run --rm --name spark-mongo -p 27017:27017 --link spark-master:spark-master -v $(shell pwd)/data:/data/db/ -d mongo
+	@docker run --rm --name spark-mongo -p 27017:27017 --link pyspark-app:pyspark-app --link spark-master:spark-master -v $(shell pwd)/data:/data/db/ -d mongo
 
 build-docker:
 	@echo "Building the docker images..."
@@ -18,6 +18,8 @@ build-docker:
 	@docker build --rm -t bde/spark-app ./pyspark_worker/
 
 start-cluster:
+	@echo "Creating Network..."
+	@docker network create spark-network
 	@echo "Starting the Spark Cluster..."
 	# @if [ ! "$(docker ps -q -f name=spark-masterrr)" ] ; then\
 	# 	echo "An instance of Spark-master is already running" ;\
@@ -40,7 +42,7 @@ submit-app:
 	@echo "Submiting app into the cluster"
 	@docker build --rm -t submit-pyspark-job ./pyspark_src/
 	@echo "Image built, now running the submit container" 
-	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master -d submit-pyspark-job 
+	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master -d submit-pyspark-job sleep 10000 
 
 clean-cluster:
 	@echo "Removing containers..."
