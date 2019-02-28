@@ -1,5 +1,6 @@
-/dist/
-/build/
+/data/*
+pyspark_src/dist/
+pyspark_src/build/
 *.egg-info
 __pycache__
 pyspark_src/pyspark/build

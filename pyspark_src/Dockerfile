@@ -11,6 +11,7 @@ ENV SPARK_APPLICATION_PYTHON_LOCATION app/pyspark_recom_engine/jobs/sampleJob.py
 # Extra (Maybe will be needed after?)
 ENV SPARK_APPLICATION_ARGS "foo bar baz"
 # Add the python egg for inter-package dependancies 
-ENV SPARK_SUBMIT_ARGS="--py-files app/dist/pyspark_recom_engine-0.1-py3.6.egg"
+# on the --packages flag we add spark dependancies that otherwise would be built by sbt
+ENV SPARK_SUBMIT_ARGS="--packages org.mongodb.spark:mongo-spark-connector_2.11:2.4.0 --py-files app/dist/pyspark_recom_engine-0.1-py3.6.egg"
 
 CMD ["/submit.sh"]
