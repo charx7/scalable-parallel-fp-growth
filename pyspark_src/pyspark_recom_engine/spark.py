@@ -2,11 +2,11 @@
 from pyspark.sql import SparkSession
 from functools import lru_cache
 
-# Spark session builder
 # The get_spark() function is memoized using @lru_cache decorator
-@lru_cache(maxsize=None)
+#@lru_cache(maxsize=None)
 def get_spark():
-    return (SparkSession.builder
-                .master("local")
-                .appName("recom-engine")
-                .getOrCreate())
+    print("Creating Spark session!")
+    return( 
+        SparkSession.builder.appName("recomEngine").config("spark.mongodb.input.uri", "mongodb://mongo:27017/testdb.myCol").config("spark.mongodb.output.uri", "mongodb://mongo:27017/testdb.myCol").getOrCreate()
+    )
+    
