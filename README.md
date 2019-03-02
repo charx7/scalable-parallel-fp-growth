@@ -62,6 +62,29 @@ Remove them just by stopping the containers (they are removed automatically)
 make clean-cluster
 ```
 
+How to restore the Database inside the mongo container
+- Create a folder inside the mongo docker container volume where you wish to copy the data to restore "transcations.json" and "transcations.metadata.json"
+```
+docker exec -it spark-mongo /bin/bash
+cd data
+mkdir restore
+```
+- Navigate to the directory where you have the db dump and copy both files from your computer to the docker volume via docker cp
+```
+docker cp transcations.json mongo-spark:/data/restore
+docker cp transcations.metadata.json mongo-spark:/data/restore
+```
+- Inside the mongo docker container run the mongo restore command at the data restore directory
+```
+docker exec -it spark-mongo /bin/bash
+cd data/restore
+# -d is the name of the database to create/replace
+# --drop is necessary if you are replacing an existing db
+# . is the directory where your backup files are located
+mongorestore --drop -d transactions .
+```
+
+- Verify that the db has been restored using the mongo shell. 
 TODO: 
 - Define a network instead of a --link
 - Get everything set-up in a composer -> Kubernetes for the cloud?
