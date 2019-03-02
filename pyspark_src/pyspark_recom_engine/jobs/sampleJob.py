@@ -25,6 +25,19 @@ def main():
     print("The first row of the collection is: \n")
     mongo_data.show()
 
+    ###################################################
+    # Test read from the transactions restored db 
+    print("Reading from transactions db... \n")
+    transactions_data = spark_session.read \
+        .format("com.mongodb.spark.sql.DefaultSource") \
+        .option("database", "transactions") \
+        .option("collection", "transcations") \
+        .load()
+    print("The generated transactions schema is: \n")
+    transactions_data.printSchema()
+    print("The show data is: \n")
+    transactions_data.show()
+
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func    
     spark_session = SparkSession.builder \
