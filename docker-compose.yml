@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  spark-mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - spark-network
+  spark-master:
+    build: ./spark_master/Dockerfile
+    ports:
+      - "7077:7077"
+      - "4040:4040"
+      - "8080:8080"
+    networks:
+      - spark-network
+    depends_on:
+      - spark-mongo
+  spark-worker-1:
+    build: ./pyspark_worker/Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - spark-network
+    depends_on:
+      - spark-mongo
+  submit-app:
+    build: ./pyspark_src/Dockerfile
+    depends_on:
+      - spark-mongo
+      - spark-worker-1
+      - spark-master
+networks:
+  spark-network:
+    driver: bridge
