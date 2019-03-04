@@ -40,7 +40,7 @@ submit-app:
 	@echo "Submiting app into the cluster"
 	@docker build --rm -t submit-pyspark-job ./pyspark_src/
 	@echo "Image built, now running the submit container" 
-	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --network spark-network -d submit-pyspark-job sleep 10000 
+	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false --network 2019_group_41_s3683974_s3743071_s3766365_spark-network submit-pyspark-job
 
 clean-cluster:
 	@echo "Removing containers..."

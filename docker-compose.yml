@@ -7,8 +7,13 @@ services:
       - "27017:27017"
     networks:
       - spark-network
+    command: mongod
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
   spark-master:
-    build: ./spark_master/Dockerfile
+    build:
+      context: ./spark_master/
     ports:
       - "7077:7077"
       - "4040:4040"
@@ -18,19 +23,17 @@ services:
     depends_on:
       - spark-mongo
   spark-worker-1:
-    build: ./pyspark_worker/Dockerfile
+    build:
+      context: ./pyspark_worker/
     ports:
       - "8081:8081"
     networks:
       - spark-network
     depends_on:
       - spark-mongo
-  submit-app:
-    build: ./pyspark_src/Dockerfile
-    depends_on:
-      - spark-mongo
-      - spark-worker-1
-      - spark-master
 networks:
   spark-network:
     driver: bridge
+volumes:
+  mongodb:
+  mongodb_config:

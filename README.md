@@ -2,6 +2,24 @@
 
 This will be the main entrypoint pont of the spark project, ie dockerfiles should be here
 
+## Simple Build with Docker Compose
+
+The easiest way to run the project is to run the cluster with docker compose.
+
+```
+docker-compose up
+```
+
+Afterwards, you need to make sure the data is inside of the
+mongo volume if you haven't done so. There are two volumes, mongodb and mongodb_config.
+The data should be inside of the mongodb volume.
+
+Then, submit the application from the pyspark src.
+
+```
+make submit-app
+```
+
 ## Build the Spark-Master
 
 build docker master image on spark_master
@@ -81,12 +99,14 @@ Remove them just by stopping the containers (they are removed automatically)
 make clean-cluster
 ```
 
+## Restore db dump inside mongo container
+
 How to restore the Database inside the mongo container
 
 - Create a folder inside the mongo docker container volume where you wish to copy the data to restore "transcations.bson" and "transcations.metadata.json"
 
 ```
-docker exec -it spark-mongo /bin/bash
+docker exec -it 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1 /bin/bash
 cd data
 mkdir restore
 ```
@@ -94,14 +114,14 @@ mkdir restore
 - Navigate to the directory where you have the db dump and copy both files from your computer to the docker volume via docker cp
 
 ```
-docker cp transcations.bson spark-mongo:/data/restore
-docker cp transcations.metadata.json spark-mongo:/data/restore
+docker cp transcations.bson 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1:/data/restore
+docker cp transcations.metadata.json 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1:/data/restore
 ```
 
 - Inside the mongo docker container run the mongo restore command at the data restore directory
 
 ```
-docker exec -it spark-mongo /bin/bash
+docker exec -it 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1 /bin/bash
 cd data/restore
 # -d is the name of the database to create/replace
 # --drop is necessary if you are replacing an existing db
@@ -110,7 +130,3 @@ mongorestore --drop -d transactions .
 ```
 
 - Verify that the db has been restored using the mongo shell.
-  TODO:
-- Define a network instead of a --link
-- Get everything set-up in a composer -> Kubernetes for the cloud?
-- Get conditionals that accept shell/bash commands on the Makefile
