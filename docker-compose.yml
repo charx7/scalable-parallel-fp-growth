@@ -33,7 +33,8 @@ services:
       - spark-mongo
 networks:
   spark-network:
-    driver: bridge
+    external:
+      name: spark-network
 volumes:
   mongodb:
   mongodb_config:

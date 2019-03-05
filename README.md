@@ -106,7 +106,7 @@ How to restore the Database inside the mongo container
 - Create a folder inside the mongo docker container volume where you wish to copy the data to restore "transcations.bson" and "transcations.metadata.json"
 
 ```
-docker exec -it 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1 /bin/bash
+docker exec -it {YOUR_DIRECTORY_NAME}_spark-mongo_1 /bin/bash
 cd data
 mkdir restore
 ```
@@ -114,14 +114,14 @@ mkdir restore
 - Navigate to the directory where you have the db dump and copy both files from your computer to the docker volume via docker cp
 
 ```
-docker cp transcations.bson 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1:/data/restore
-docker cp transcations.metadata.json 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1:/data/restore
+docker cp transcations.bson {YOUR_DIRECTORY_NAME}_spark-mongo_1:/data/restore
+docker cp transcations.metadata.json {YOUR_DIRECTORY_NAME}_spark-mongo_1:/data/restore
 ```
 
 - Inside the mongo docker container run the mongo restore command at the data restore directory
 
 ```
-docker exec -it 2019_group_41_s3683974_s3743071_s3766365_spark-mongo_1 /bin/bash
+docker exec -it {YOUR_DIRECTORY_NAME}_spark-mongo_1 /bin/bash
 cd data/restore
 # -d is the name of the database to create/replace
 # --drop is necessary if you are replacing an existing db
