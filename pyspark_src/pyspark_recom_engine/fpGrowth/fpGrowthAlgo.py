@@ -5,6 +5,7 @@
     @freqArg:    The frequency of the product
     @parentNode: The parent of the node for linking
 '''
+import json
 # Define a node on the tree
 
 
@@ -30,12 +31,26 @@ class TreeNode:
 
     def makeDictionary(self, depth=0):
         if len(self.children) == 0:
-            return {self._itemName: []}
+            return {
+                self._itemName: {
+                    'children': [{}],
+                    'depth': depth,
+                    'parentTree': {},
+                    'freq': self._freq
+                }
+            }
         childrenList = list(self.children.keys())
         childrenTrees = []
         for child in childrenList:
-            childrenTrees += [self.children[child].makeDictionary()]
-        return {self._itemName: childrenTrees}
+            childrenTrees += [self.children[child].makeDictionary(depth + 1)]
+        return {
+            self._itemName: {
+                'children': childrenTrees,
+                'depth': depth,
+                'parentTree': {},
+                'freq': self._freq
+            }
+        }
 
 
 # This method will create the fp-tree
@@ -64,7 +79,8 @@ def CreateTree(data):
             # Save a reference to the previous item
             previousItemsList.append(item)
     # Return with the grown tree
-    return root
+
+    return json.dumps(root.makeDictionary())
 
 
 def updateTree(item, previousItems, tree):
@@ -109,6 +125,3 @@ if __name__ == "__main__":
     # breakpoint()
     fpTree = CreateTree(testData3)
     # to display
-    fpTree.display()
-
-    print(fpTree.makeDictionary())
