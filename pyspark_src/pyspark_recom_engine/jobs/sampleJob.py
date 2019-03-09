@@ -1,10 +1,14 @@
-#from pyspark_recom_engine.spark import get_spark
+from pyspark_recom_engine.spark import get_spark, test_import
+from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
+# Own imports
+#from pyspark_recom_engine import list_sorter
+
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import IntegerType
 from pyspark.sql import functions as F 
 from pyspark.sql.functions import udf
-
+ 
 def main():
     '''
         Sample Spark job to test if everything is ok!
@@ -86,7 +90,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.001
+    threshold = 0.0001
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -102,7 +106,9 @@ def main():
         'individual_items'
     ).rdd.flatMap(lambda x: x).collect() 
     print('\n The item list is: ', orderedItemsList)
-
+    
+    # execute test func
+    #list_sorter()
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func    
     spark_session = SparkSession.builder \
@@ -111,5 +117,6 @@ if __name__ == '__main__':
         .config("spark.mongodb.output.uri", "mongodb://spark-mongo:27017/testdb.myColl") \
         .config('spark.jars.packages', "org.mongodb.spark:mongo-spark-connector_2.11:2.4.0") \
         .getOrCreate()
+    spark_session.sparkContext.setLogLevel("ERROR") # Set log level to error
     # Execute main method
     main()
