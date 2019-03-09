@@ -5,7 +5,7 @@ from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
 
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import IntegerType, ArrayType, StringType
 from pyspark.sql import functions as F 
 from pyspark.sql.functions import udf
  
@@ -105,10 +105,23 @@ def main():
     orderedItemsList = filtered_odered_freqs_percent.select(
         'individual_items'
     ).rdd.flatMap(lambda x: x).collect() 
-    print('\n The item list is: ', orderedItemsList)
+    #print('\n The item list is: ', orderedItemsList)
     
-    # execute test func
-    #list_sorter()
+    # Make a dict using the orderedItemsList
+    orderedItemsIndex = [item for item in range(len(orderedItemsList))]
+    # Make a dictionary using zip
+    orderedItemsDict = dict(zip(orderedItemsList, orderedItemsIndex))
+    
+    # Use udf to define a row-at-a-time udf
+    sortTransactions = udf(lambda x: list_sorter(x, orderedItemsDict), ArrayType(StringType()))
+    # Apply the function
+    sorted_data = transactions_data.select(
+        'TransactionID',
+        sortTransactions('ProductCode').alias('OrderedProductCode')
+    ).na.drop()
+    sorted_data.show()
+    
+    
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func    
     spark_session = SparkSession.builder \

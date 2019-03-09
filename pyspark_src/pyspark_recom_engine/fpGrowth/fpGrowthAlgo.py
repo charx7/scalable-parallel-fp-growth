@@ -86,7 +86,11 @@ if __name__ == "__main__":
         ['K','M','Y'],
         ['K','E','O']
     ]
+    testData3 = [
+        ['K','E','O','Y'],
+        ['E','O','M']
+    ]
     #breakpoint()
-    fpTree = CreateTree(testData2)
+    fpTree = CreateTree(testData)
     # to display
     fpTree.display()
