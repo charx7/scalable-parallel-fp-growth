@@ -30,8 +30,6 @@ class TreeNode:
             child.display(ind+1)
 
     def makeDictionary(self, depth=0, parentList=[]):
-       # parentList2 = []
-        print(self._parent, depth, self._itemName, parentList)
         if self._parent is not None:
             parentList = parentList + [self._parent]
 
