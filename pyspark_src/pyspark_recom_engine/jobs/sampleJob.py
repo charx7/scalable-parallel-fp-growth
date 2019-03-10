@@ -122,9 +122,14 @@ def main():
     ).na.drop()
     sorted_data.show()
 
-    a = sorted_data.select('OrderedProductCode').rdd.map(lambda x: (CreateTree(x),1)).take(5)
-    print(a)
+    testPrint = sorted_data.select('OrderedProductCode').rdd.map(lambda x: (CreateTree(x),1)).take(20)
     
+    index = 0
+    for json in testPrint:
+        print('Index is: ', index)
+        print(json, '\n')
+        index = index + 1
+
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func    
     spark_session = SparkSession.builder \

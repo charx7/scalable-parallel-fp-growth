@@ -29,25 +29,31 @@ class TreeNode:
         for child in self.children.values():
             child.display(ind+1)
 
-    def makeDictionary(self, depth=0):
+    def makeDictionary(self, depth=0, parentList=[]):
+       # parentList2 = []
+        print(self._parent, depth, self._itemName, parentList)
+        if self._parent is not None:
+            parentList = parentList + [self._parent]
+
         if len(self.children) == 0:
             return {
                 self._itemName: {
                     'children': [{}],
                     'depth': depth,
-                    'parentTree': {},
+                    'parentTree': parentList,
                     'freq': self._freq
                 }
             }
         childrenList = list(self.children.keys())
         childrenTrees = []
         for child in childrenList:
-            childrenTrees += [self.children[child].makeDictionary(depth + 1)]
+            childrenTrees += [self.children[child].makeDictionary(depth + 1, parentList)]
+
         return {
             self._itemName: {
                 'children': childrenTrees,
                 'depth': depth,
-                'parentTree': {},
+                'parentTree': parentList,
                 'freq': self._freq
             }
         }
@@ -123,10 +129,6 @@ if __name__ == "__main__":
         ['E', 'O', 'M']
     ]
     # breakpoint()
-    fpTree = CreateTree(testData3)
+    fpTree = CreateTree(testData)
     # to display
-<<<<<<< HEAD
-    fpTree.display()
-    
-=======
->>>>>>> a8daf299415d00dc63e96527adaca62871428f33
+    print(fpTree)
