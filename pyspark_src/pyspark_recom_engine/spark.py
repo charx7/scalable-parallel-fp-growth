@@ -9,4 +9,7 @@ def get_spark():
     return( 
         SparkSession.builder.appName("recomEngine").config("spark.mongodb.input.uri", "mongodb://mongo:27017/testdb.myCol").config("spark.mongodb.output.uri", "mongodb://mongo:27017/testdb.myCol").getOrCreate()
     )
+
+def test_import():
+    print('test')
     
