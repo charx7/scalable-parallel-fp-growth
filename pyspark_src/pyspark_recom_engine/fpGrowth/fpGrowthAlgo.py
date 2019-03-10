@@ -148,7 +148,7 @@ def mergeTree(tree1, tree2):
             
             treeData['freq']= tree1[node1]['freq'] + tree2[node2]['freq']
             (i,j) = (0, 0)
-            while(childrenList1[0] <= ):
+            while(childrenList1[0] <= 0):
                 while(childrenList2[0] != []):
                     childrenTrees += [
                         mergeTree(tree1[node1]['children'][i], \
