@@ -8,7 +8,6 @@
 import json
 # Define a node on the tree
 
-
 class TreeNode:
     # Class constructor
     def __init__(self, item_value, frequency_value, parent_value):
@@ -31,7 +30,7 @@ class TreeNode:
 
     def makeDictionary(self, depth=0, parentList=[]):
        # parentList2 = []
-        print(self._parent, depth, self._itemName, parentList)
+        #print(self._parent, depth, self._itemName, parentList)
         if self._parent is not None:
             parentList = parentList + [self._parent]
 
@@ -111,8 +110,82 @@ def updateTree(item, previousItems, tree):
             newNode = TreeNode(item, 1, tree._itemName)
             # Append it to the children dict
             tree.children[item] = newNode
+    
+def mergeTree(tree1, tree2):
+    treeData  = {
+        'children': [],
+        'depth': 0,
+        'parentTree': [],
+        'freq': 0,
+    }
+
+    
+    if bool(tree1.keys()):
+        node1 = list(tree1.keys())[0]
+    else: 
+        # Merge the rest of the tree to the non empty one
+        print(mergedTree)
+        node2 = list(tree2.keys())[0]
+        treeData['children'] = [tree2[node2]]
+        return treeData
+    if bool(tree2.keys()):
+        node2 = list(tree2.keys())[0]
+    else: 
+        treeData['children'] = [tree1[node1]]
+        return treeData
+    # print(node1)
+    # print(node2)
+    # print(mergedTree)
+    
+    #Check if trees have the same parents
+    if (tree1[node1]['parentTree'] == tree2[node2]['parentTree']):
+        #Check if the nodes are the same
+        if (node1 == node2):
+            nodeName = node1
+            childrenList1 = [list(x.keys()) for x in tree1[node1]['children']]
+            childrenList2 = [list(x.keys()) for x in tree2[node2]['children']]
+            childrenTrees = []
+            
+            treeData['freq']= tree1[node1]['freq'] + tree2[node2]['freq']
+            (i,j) = (0, 0)
+            while(childrenList1[0] <= ):
+                while(childrenList2[0] != []):
+                    childrenTrees += [
+                        mergeTree(tree1[node1]['children'][i], \
+                        tree2[node2]['children'][j])
+                    ]
+                    j += 1
+                i+= 1
+            treeData['children'] = childrenTrees
+            # for tree1child in range(len(childrenList1)):
+            #     for tree2child in range(len(childrenList2)):
+
+            #     mergedTree[mergedTreeNode]['freq']= tree1[node1]['freq'] + tree2[node2]['freq']
+            #     mergedTree[mergedTreeNode]['children'] = childrenTrees
+        elif (node1 != node2):
+            treeData['children'] = [
+                [tree1[node1]] + [tree2[node2]]
+            ]
+    
+    mergedTree = {
+        nodeName: treeData
+    }
+    return mergedTree
+    
+def mainMerge(tree1, tree2):
+    """
+    Executes a merge of two trees.
+    Takes parsed JSONs as input.
+    """
+    # parse the string into a json
+    parsedTree1 = json.loads(fpTree1)
+    parsedTree2 = json.loads(fpTree2)
 
 
+    finalTree = mergeTree(parsedTree1, parsedTree2)
+    
+    return finalTree
+    
 if __name__ == "__main__":
     # to test the tree
     testData = [
@@ -129,6 +202,8 @@ if __name__ == "__main__":
         ['E', 'O', 'M']
     ]
     # breakpoint()
-    fpTree = CreateTree(testData)
-    # to display
-    print(fpTree)
+    fpTree1 = CreateTree(testData)
+    fpTree2 = CreateTree(testData2)
+    
+    mergedTree = mainMerge(fpTree1, fpTree2)
+    print(mergedTree['root'])
