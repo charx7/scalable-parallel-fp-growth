@@ -1,5 +1,6 @@
 from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
+from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree
 # Own imports
 #from pyspark_recom_engine import list_sorter
 
@@ -90,7 +91,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.0001
+    threshold = 0.001
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -120,8 +121,15 @@ def main():
         sortTransactions('ProductCode').alias('OrderedProductCode')
     ).na.drop()
     sorted_data.show()
+
+    testPrint = sorted_data.select('OrderedProductCode').rdd.map(lambda x: (CreateTree(x),1)).take(20)
     
-    
+    index = 0
+    for json in testPrint:
+        print('Index is: ', index)
+        print(json, '\n')
+        index = index + 1
+
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func    
     spark_session = SparkSession.builder \
