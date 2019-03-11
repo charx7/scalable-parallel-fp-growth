@@ -177,5 +177,4 @@ if __name__ == "__main__":
     fpTree2 = CreateTree(testData2)
 
     mergedTree = mainMerge(fpTree1, fpTree2)
-    breakpoint()
     print(mergedTree.display())
