@@ -87,7 +87,8 @@ def CreateTree(data):
             previousItemsList.append(item)
     # Return with the grown tree
 
-    return json.dumps(root.makeDictionary())
+    # return json.dumps(root.makeDictionary())
+    return root
 
 
 def updateTree(item, previousItems, tree):
@@ -114,63 +115,32 @@ def updateTree(item, previousItems, tree):
             tree.children[item] = newNode
 
 
-def mergeTree(tree1, tree2, depth=0):
-    treeData = {
-        'children': [],
-        'depth': depth,
-        'parentTree': [],
-        'freq': 0,
-    }
-    nodeName = 'TEST'
-    print(tree1.keys(), tree2.keys())
-    if bool(tree1.keys()):
-        print(list(tree1.keys()))
-        node1 = list(tree1.keys())[0]
-    else:
-        # Merge the rest of the tree to the non empty one
-        node2 = list(tree2.keys())[0]
-        treeData['children'] = [tree2[node2]]
+def mergeTree(tree1, tree2, baseTree, depth=0):
+    currentNodeName = baseTree._itemName
+    childrenList1 = list(tree1.children.keys())
+    childrenList2 = list(tree2.children.keys())
+    childrenToBeMerged = list(set(childrenList1) & set(childrenList2))
 
-    if bool(tree2.keys()):
-        print('tree2', list(tree2.keys()))
-        node2 = list(tree2.keys())[0]
-    else:
-        treeData['children'] = [tree1[node1]]
-    # Check if trees have the same parents
-    if (tree1[node1]['parentTree'] == tree2[node2]['parentTree']):
-        # Check if the nodes are the same
-        if (node1 == node2):
-            nodeName = node1
-            childrenList1 = [list(x.keys())[0]
-                             for x in tree1[node1]['children'] if tree1[node1]['children'][0] != {}]
-            childrenList2 = [list(x.keys())[0]
-                             for x in tree2[node2]['children'] if tree2[node2]['children'][0] != {}]
-            childrenTrees = []
-            treeData['freq'] = tree1[node1]['freq'] + tree2[node2]['freq']
+    for node in childrenToBeMerged:
+        freqsSum = tree1.children[node]._freq + tree2.children[node]._freq
+        baseTree.children[node] = TreeNode(node, freqsSum, currentNodeName)
 
-            (i, j) = (0, 0)
-            while i < len(childrenList1):
-                while j < len(childrenList2):
-                    childrenTrees += [
-                        mergeTree(tree1[node1]['children'][i],
-                                  tree2[node2]['children'][j],
-                                  depth + 1)
-                    ]
-                    j += 1
-                i += 1
-            treeData['children'] = childrenTrees
-        elif (node1 != node2):
-            #            print(node1, node2)
-            nodeName = node2
-            treeData['freq'] = tree2[node2]['freq']
-      #      print(nodeName, treeData['freq'])
+        mergeTree(
+            tree1.children[node],
+            tree2.children[node],
+            baseTree.children[node],
+            depth+1)
 
-            treeData['children'] = [tree1[node1]] + [tree2[node2]]
+    childrenToAppend1 = [
+        x for x in childrenList1 if x not in childrenToBeMerged]
+    childrenToAppend2 = [
+        x for x in childrenList2 if x not in childrenToBeMerged]
 
-    mergedTree = {
-        nodeName: treeData
-    }
-    return mergedTree
+    for node in childrenToAppend1:
+        baseTree.children[node] = tree1.children[node]
+    for node in childrenToAppend2:
+        baseTree.children[node] = tree2.children[node]
+    return baseTree
 
 
 def mainMerge(tree1, tree2):
@@ -179,10 +149,10 @@ def mainMerge(tree1, tree2):
     Takes parsed JSONs as input.
     """
     # parse the string into a json
-    parsedTree1 = json.loads(fpTree1)
-    parsedTree2 = json.loads(fpTree2)
-
-    finalTree = mergeTree(parsedTree1, parsedTree2)
+    #parsedTree1 = json.loads(fpTree1)
+    #parsedTree2 = json.loads(fpTree2)
+    baseTree = TreeNode('root', 0, None)
+    finalTree = mergeTree(tree1, tree2, baseTree)
 
     return finalTree
 
@@ -207,4 +177,5 @@ if __name__ == "__main__":
     fpTree2 = CreateTree(testData2)
 
     mergedTree = mainMerge(fpTree1, fpTree2)
-    print(mergedTree)
+    breakpoint()
+    print(mergedTree.display())
