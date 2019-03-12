@@ -1,6 +1,6 @@
 from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
-from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree
+from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge
 # Own imports
 #from pyspark_recom_engine import list_sorter
 
@@ -121,15 +121,24 @@ def main():
         sortTransactions('ProductCode').alias('OrderedProductCode')
     ).na.drop()
     sorted_data.show()
-
-    testPrint = sorted_data.select('OrderedProductCode').rdd.map(lambda x: (CreateTree(x),1)).take(20)
     
-    index = 0
-    for json in testPrint:
-        print('Index is: ', index)
-        print(json, '\n')
-        index = index + 1
+    # Map step to the resulting dataframe CreateTree(x) with arbitraty key 1 (all must be reduced?)
+    testPrint = sorted_data.select('OrderedProductCode').rdd.map(lambda x: CreateTree(x))
+    
+    # Unconmment to print
+    # add .take(20) at the end of testPrint to collect partials (this transforms them to a list) 
+    # index = 0
+    # for text in testPrint:
+    #     print('Index is: ', index)
+    #     print(text, '\n')
+    #     index = index + 1
+    # Reduce step of the algo 
+    fpTree = testPrint.reduce(lambda x, y: mainMerge(x,y))
 
+    print('########## Finished Reducing ###########')
+    print('The type is: ', type(fpTree))
+    print('The merged fp-tree is: ', fpTree)
+    fpTree.display()
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func    
     spark_session = SparkSession.builder \
