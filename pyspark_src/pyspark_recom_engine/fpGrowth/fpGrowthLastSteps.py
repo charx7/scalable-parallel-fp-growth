@@ -17,7 +17,7 @@ def find_values(id, json_repr):
     json.loads(json_repr, object_hook=_decode_dict)  # Return value ignored.
     
     for i in results:
-        finalResult.append({i["parentTree"]:i["freq"]})
+        finalResult.append({tuple(i["parentTree"]):i["freq"]})
     
     return finalResult
 
@@ -26,8 +26,10 @@ def find_values(id, json_repr):
 def generateConditionalPatternBase(itemSupportTable,treeString):
     conditionalPatternBaseTable = pd.DataFrame(columns=['item','ConditionalPattern'])
     for itemset in itemSupportTable['item']:
-        conditionalPatternBaseTable['item'] = itemset
-        conditionalPatternBaseTable['ConditionalPattern'] = find_values(itemset,treeString)
+        path = find_values(itemset,treeString)
+        conditionalPatternBaseTable = conditionalPatternBaseTable.append({'item': itemset, 'ConditionalPattern': path},ignore_index=True)
+        
+    return conditionalPatternBaseTable
 
 
 #### This is generic function which I had written for generating Powerset to test ['K','E','M','O','Y']
@@ -66,4 +68,22 @@ def generate_association_rules(itemSupportTable, confidence_threshold):
     return rules
 
 
+def main():
 
+    treeString = '{"root": {"children": [{"K": {"children": [{"E": {"children": [{"M": {"children": [{"O": {"children": [{"Y": {"children": [{}], "depth": 5, "parentTree": ["root", "K", "E", "M", "O"], "freq": 1}}], "depth": 4, "parentTree": ["root", "K", "E", "M"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}, {"O": {"children": [{"Y": {"children": [{}], "depth": 4, "parentTree": ["root", "K", "E", "O"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}], "depth": 2, "parentTree": ["root", "K"], "freq": 2}}], "depth": 1, "parentTree": ["root"], "freq": 2}}], "depth": 0, "parentTree": [], "freq": 0}}'
+    items = [ ('Y', 5) ,('E', 4)]
+    itemSupportTable = pd.DataFrame(items,columns=['item','support']) 
+
+    conditionalPatternBaseTable = generateConditionalPatternBase(itemSupportTable,treeString)
+
+    print(conditionalPatternBaseTable)
+
+    lists = ['K','E','M','O','Y']
+
+    powersets = powerset(lists)
+
+    print(powersets)
+
+
+if __name__ == '__main__':
+    main()
