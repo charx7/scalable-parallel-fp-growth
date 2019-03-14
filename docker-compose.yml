@@ -16,7 +16,7 @@ services:
       context: ./spark_master/
     ports:
       - "7077:7077"
-      - "4040:4040"
+      #- "4040:4040"
       - "8080:8080"
     networks:
       - spark-network

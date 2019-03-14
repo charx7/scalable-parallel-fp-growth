@@ -70,8 +70,9 @@ def generate_association_rules(itemSupportTable, confidence_threshold):
 
 def main():
 
-    treeString = '{"root": {"children": [{"K": {"children": [{"E": {"children": [{"M": {"children": [{"O": {"children": [{"Y": {"children": [{}], "depth": 5, "parentTree": ["root", "K", "E", "M", "O"], "freq": 1}}], "depth": 4, "parentTree": ["root", "K", "E", "M"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}, {"O": {"children": [{"Y": {"children": [{}], "depth": 4, "parentTree": ["root", "K", "E", "O"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}], "depth": 2, "parentTree": ["root", "K"], "freq": 2}}], "depth": 1, "parentTree": ["root"], "freq": 2}}], "depth": 0, "parentTree": [], "freq": 0}}'
-    items = [ ('Y', 5) ,('E', 4)]
+    treeString = '{"root": {"children": [{"K": {"children": [{"3": {"children": [{"M": {"children": [{"O": {"children": [{"Y": {"children": [{}], "depth": 5, "parentTree": ["root", "K", "E", "M", "O"], "freq": 1}}], "depth": 4, "parentTree": ["root", "K", "E", "M"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}, {"O": {"children": [{"Y": {"children": [{}], "depth": 4, "parentTree": ["root", "K", "E", "O"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}], "depth": 2, "parentTree": ["root", "K"], "freq": 2}}], "depth": 1, "parentTree": ["root"], "freq": 2}}], "depth": 0, "parentTree": [], "freq": 0}}'
+    #items = [ ('Y', 5) ,('E', 4)]
+    items = [('K',2)]
     itemSupportTable = pd.DataFrame(items,columns=['item','support']) 
 
     conditionalPatternBaseTable = generateConditionalPatternBase(itemSupportTable,treeString)

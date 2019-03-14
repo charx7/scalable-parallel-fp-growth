@@ -1,9 +1,11 @@
 from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
 from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge
+from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import generateConditionalPatternBase
 # Own imports
 #from pyspark_recom_engine import list_sorter
-
+import json
+import pandas as pd
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import IntegerType, ArrayType, StringType
@@ -72,6 +74,7 @@ def main():
         'no_of_transactions2',
         F.explode_outer('ProductCode').alias('individual_items')
         )
+    print('The exploded transactions data is: \n')
     exploded_transactions.show() # Show in the console
 
     exploded_transactions_group = exploded_transactions.select("*").groupBy(
@@ -81,6 +84,7 @@ def main():
     ordered_freqs = exploded_transactions_group.orderBy(
         exploded_transactions_group['count'].desc()
     )
+    print('The Grouped by item exploded transactions data counted and ordered by freq is: \n')
     ordered_freqs.show() # Show method
 
     # Now we divide by the original count 
@@ -91,12 +95,13 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.001
+    threshold = 0.01
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
         ordered_freqs_percents['percentage'] > threshold
     )
+    print('The filtered freqs data above the threshold is: \n')
     filtered_odered_freqs_percent.show() # Show
     filtered_count = filtered_odered_freqs_percent.count()
     print('\nThe number of item frequency above ', threshold\
@@ -120,11 +125,14 @@ def main():
         'TransactionID',
         sortTransactions('ProductCode').alias('OrderedProductCode')
     ).na.drop()
+
+    print('Filtered ordered (original) transactions (according to relevance threshold)')
     sorted_data.show()
     
+    print('######### Start Map phase #############')
     # Map step to the resulting dataframe CreateTree(x) with arbitraty key 1 (all must be reduced?)
     testPrint = sorted_data.select('OrderedProductCode').rdd.map(lambda x: CreateTree(x))
-    
+    print('######### End Map phase ###############')
     # Unconmment to print
     # add .take(20) at the end of testPrint to collect partials (this transforms them to a list) 
     # index = 0
@@ -133,12 +141,46 @@ def main():
     #     print(text, '\n')
     #     index = index + 1
     # Reduce step of the algo 
+    print('########## Start Reduce phase ##########')
     fpTree = testPrint.reduce(lambda x, y: mainMerge(x,y))
 
     print('########## Finished Reducing ###########')
     print('The type is: ', type(fpTree))
     print('The merged fp-tree is: ', fpTree)
     fpTree.display()
+
+    print('Making a dict out of the tree...')
+    jsonifiedFpTree = json.dumps(fpTree.makeDictionary())
+
+    # Ugly spark concatenation
+    filtered_odered_freqs_concat =  filtered_odered_freqs_percent.withColumn(
+        'item_freq',
+        F.concat(
+            F.lit('("'),
+            F.col('individual_items'),
+            F.lit('",'),
+            F.col('count'),
+            F.lit(')')
+        ).alias('concatenated_item_freq')
+    )
+    print('DF to Mine using the grown fp-tree is: ')
+    filtered_odered_freqs_concat.show()
+
+    # Collect
+    collectedRowsData = filtered_odered_freqs_concat.select('item_freq').collect()
+    # Convert into list
+    collectedList = [row.item_freq for row in collectedRowsData]
+    # Tuple em
+    tupledCollectedList = [eval(x) for x in collectedList]
+    print(tupledCollectedList)
+    # ankits pandas stuff
+    itemSupportTable = pd.DataFrame(tupledCollectedList,columns=['item','support'])
+    conditionalPatternBaseTable = generateConditionalPatternBase(itemSupportTable,jsonifiedFpTree)
+
+    print(conditionalPatternBaseTable)
+
+    
+
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func    
     spark_session = SparkSession.builder \
