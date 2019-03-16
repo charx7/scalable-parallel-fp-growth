@@ -190,7 +190,7 @@ def main():
     print(debug)
 
     # Use a UDF to generate the subsets of a given item on the item support table
-    generateSubset = udf(lambda x: generatePowerset(x[0],x[1]), StringType())
+    generateSubset = udf(lambda x: generatePowerset(x[0],x[1], 366), StringType())
     # Apply the function 
     items_subset = conditional_patterns.select(
         'individual_items',
@@ -198,16 +198,15 @@ def main():
         'count',
         generateSubset(
             array(F.col('individual_items').cast(StringType()), F.col('conditional_patterns'
-            ).cast(StringType()))).alias('subsets')
+            ).cast(StringType()))).alias('conditional_patterns_set')
         )
     print('\nThe subsets generated after mining the tree are: ')
     items_subset.show()
     
     # Debug stuff
-    debug = items_subset.select('subsets').take(2)
+    debug = items_subset.select('conditional_patterns_set').take(2)
     print('The subsets are: ',debug)
     
-
     # # Collect
     # collectedRowsData = filtered_odered_freqs_concat.select('item_freq').collect()
     # # Convert into list

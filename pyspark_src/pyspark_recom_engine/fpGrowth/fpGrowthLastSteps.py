@@ -22,7 +22,7 @@ def find_values(id, json_repr):
         
     return finalResult
 
-def generatePowerset(item, conditional_patterns):
+def generatePowerset(item, conditional_patterns, threshold):
    print('The item is: ', item)
    print('The cond patterns are: ', conditional_patterns)
    listofPatterns = []
@@ -55,7 +55,11 @@ def generatePowerset(item, conditional_patterns):
    listofPatterns.sort(key=itemgetter("ConditionalPatternSets"))
    for key, group in itertools.groupby(listofPatterns, lambda item: item["ConditionalPatternSets"]):
        #print(key, sum([item["freq"] for item in group]))
-       finalList.append({"ConditionalPatternSets":key, "freq":sum([item["freq"] for item in group])})
+       #finalList.append({"ConditionalPatternSets":key, "freq":sum([item["freq"] for item in group])})
+       mydict = {"ConditionalPatternSets":key, "freq":sum([item["freq"] for item in group])}
+       if (mydict["freq"] >= threshold):
+           finalList.append(mydict)
+
    return str(finalList)
 
 ### It will call the find_values function for all the items in the itemSupportTable
