@@ -1,7 +1,6 @@
 import json
-import pandas as pd
 import itertools
-
+from operator import itemgetter
 
 ### It will create a list of dictionaries for all the possible path for a particular item
 ### The key in the dictionary is path and value is the frequency.
@@ -17,9 +16,47 @@ def find_values(id, json_repr):
     json.loads(json_repr, object_hook=_decode_dict)  # Return value ignored.
     
     for i in results:
-        finalResult.append({tuple(i["parentTree"]):i["freq"]})
-    
+        
+        elementToAppend = {str(tuple(i["parentTree"])):i["freq"]}
+        finalResult.append(json.dumps(elementToAppend))
+        
     return finalResult
+
+def generatePowerset(item, conditional_patterns):
+   print('The item is: ', item)
+   print('The cond patterns are: ', conditional_patterns)
+   listofPatterns = []
+   finalList=[]
+   print('Parsed cond patterns is: ',list(json.loads(conditional_patterns)))
+   #conditional_patterns = json.loads(conditional_patterns) # String parse into dict
+   for path in list(json.loads(conditional_patterns)):
+       print('the path is: ', path)
+       #path = json.loads(path)
+       # print(list(path.keys()))
+       for key,value in (path.items()):
+           #print(key)
+           #print(value)
+           listOfPowerset = (powerset(list(eval(key))))
+           #print(listOfPowerset)
+           for sets in listOfPowerset:
+               #tup = tuple(item)
+               tup = (item, )
+               print('The type of sets is: ',type(sets))
+               print('The sets object is: ',sets)
+               print('The tuple of sets object is: ', (sets,))
+               tupleToAppend = (sets,) + tup
+               stringToAppend = str(tupleToAppend)
+               print('The string to append is: ', stringToAppend)
+               dictToAppend = {
+                   "ConditionalPatternSets": stringToAppend,
+                   "freq": value
+               }
+               listofPatterns.append(dictToAppend)
+   listofPatterns.sort(key=itemgetter("ConditionalPatternSets"))
+   for key, group in itertools.groupby(listofPatterns, lambda item: item["ConditionalPatternSets"]):
+       #print(key, sum([item["freq"] for item in group]))
+       finalList.append({"ConditionalPatternSets":key, "freq":sum([item["freq"] for item in group])})
+   return str(finalList)
 
 ### It will call the find_values function for all the items in the itemSupportTable
 # It will store all the possible patterns in the data frame for a particular item.
@@ -70,9 +107,9 @@ def generate_association_rules(itemSupportTable, confidence_threshold):
 
 def main():
 
-    treeString = '{"root": {"children": [{"K": {"children": [{"3": {"children": [{"M": {"children": [{"O": {"children": [{"Y": {"children": [{}], "depth": 5, "parentTree": ["root", "K", "E", "M", "O"], "freq": 1}}], "depth": 4, "parentTree": ["root", "K", "E", "M"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}, {"O": {"children": [{"Y": {"children": [{}], "depth": 4, "parentTree": ["root", "K", "E", "O"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}], "depth": 2, "parentTree": ["root", "K"], "freq": 2}}], "depth": 1, "parentTree": ["root"], "freq": 2}}], "depth": 0, "parentTree": [], "freq": 0}}'
-    #items = [ ('Y', 5) ,('E', 4)]
-    items = [('K',2)]
+    treeString = '{"root": {"children": [{"K": {"children": [{"E": {"children": [{"M": {"children": [{"O": {"children": [{"Y": {"children": [{}], "depth": 5, "parentTree": ["root", "K", "E", "M", "O"], "freq": 1}}], "depth": 4, "parentTree": ["root", "K", "E", "M"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}, {"O": {"children": [{"Y": {"children": [{}], "depth": 4, "parentTree": ["root", "K", "E", "O"], "freq": 1}}], "depth": 3, "parentTree": ["root", "K", "E"], "freq": 1}}], "depth": 2, "parentTree": ["root", "K"], "freq": 2}}], "depth": 1, "parentTree": ["root"], "freq": 2}}], "depth": 0, "parentTree": [], "freq": 0}}'
+    items = [ ('Y', 5) ,('E', 4)]
+    #items = [('K',2)]
     itemSupportTable = pd.DataFrame(items,columns=['item','support']) 
 
     conditionalPatternBaseTable = generateConditionalPatternBase(itemSupportTable,treeString)
@@ -82,9 +119,9 @@ def main():
     lists = ['K','E','M','O','Y']
 
     powersets = powerset(lists)
-
-    print(powersets)
-
+    print(conditionalPatternBaseTable.iloc[1]['ConditionalPattern'])
+    #print(powersets)
+    
 
 if __name__ == '__main__':
     main()

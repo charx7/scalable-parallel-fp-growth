@@ -1,16 +1,17 @@
 from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
 from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge
-from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import generateConditionalPatternBase
+from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset
 # Own imports
 #from pyspark_recom_engine import list_sorter
 import json
-import pandas as pd
+#import pandas as pd
+import time
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import IntegerType, ArrayType, StringType
 from pyspark.sql import functions as F 
-from pyspark.sql.functions import udf
+from pyspark.sql.functions import udf, array
  
 def main():
     '''
@@ -95,7 +96,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.01
+    threshold = 0.005
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -130,8 +131,12 @@ def main():
     sorted_data.show()
     
     print('######### Start Map phase #############')
+    start = time.time()
     # Map step to the resulting dataframe CreateTree(x) with arbitraty key 1 (all must be reduced?)
     testPrint = sorted_data.select('OrderedProductCode').rdd.map(lambda x: CreateTree(x))
+    
+    end = time.time()
+    print('Time Elapsed: ', end - start)
     print('######### End Map phase ###############')
     # Unconmment to print
     # add .take(20) at the end of testPrint to collect partials (this transforms them to a list) 
@@ -142,10 +147,13 @@ def main():
     #     index = index + 1
     # Reduce step of the algo 
     print('########## Start Reduce phase ##########')
+    start = time.time()
     fpTree = testPrint.reduce(lambda x, y: mainMerge(x,y))
-
+    end = time.time()
+    print('Time Elapsed: ', end - start)
     print('########## Finished Reducing ###########')
-    print('The type is: ', type(fpTree))
+    
+    #print('The type is: ', type(fpTree))
     print('The merged fp-tree is: ', fpTree)
     fpTree.display()
 
@@ -166,19 +174,59 @@ def main():
     print('DF to Mine using the grown fp-tree is: ')
     filtered_odered_freqs_concat.show()
 
-    # Collect
-    collectedRowsData = filtered_odered_freqs_concat.select('item_freq').collect()
-    # Convert into list
-    collectedList = [row.item_freq for row in collectedRowsData]
-    # Tuple em
-    tupledCollectedList = [eval(x) for x in collectedList]
-    print(tupledCollectedList)
-    # ankits pandas stuff
-    itemSupportTable = pd.DataFrame(tupledCollectedList,columns=['item','support'])
-    conditionalPatternBaseTable = generateConditionalPatternBase(itemSupportTable,jsonifiedFpTree)
+    # Use udf to define a row-at-a-time udf
+    generateCondPattern = udf(lambda x: find_values(str(x), jsonifiedFpTree), ArrayType(StringType()))
+    # Apply the function
+    conditional_patterns = filtered_odered_freqs_concat.select(
+        'individual_items',
+        'count',
+        'percentage',
+        generateCondPattern('individual_items').alias('conditional_patterns')
+    )
+    print('\nThe generated conditional patterns are: ')
+    conditional_patterns.show()
+    # Debug stuff
+    debug = conditional_patterns.select('conditional_patterns').take(2)
+    print(debug)
 
-    print(conditionalPatternBaseTable)
+    # Use a UDF to generate the subsets of a given item on the item support table
+    generateSubset = udf(lambda x: generatePowerset(x[0],x[1]), StringType())
+    # Apply the function 
+    items_subset = conditional_patterns.select(
+        'individual_items',
+        'conditional_patterns',
+        'count',
+        generateSubset(
+            array(F.col('individual_items').cast(StringType()), F.col('conditional_patterns'
+            ).cast(StringType()))).alias('subsets')
+        )
+    print('\nThe subsets generated after mining the tree are: ')
+    items_subset.show()
+    
+    # Debug stuff
+    debug = items_subset.select('subsets').take(2)
+    print('The subsets are: ',debug)
+    
 
+    # # Collect
+    # collectedRowsData = filtered_odered_freqs_concat.select('item_freq').collect()
+    # # Convert into list
+    # collectedList = [row.item_freq for row in collectedRowsData]
+    # # Tuple em
+    # tupledCollectedList = [eval(x) for x in collectedList]
+    # print(tupledCollectedList)
+    # # ankits pandas stuff
+    # itemSupportTable = pd.DataFrame(tupledCollectedList,columns=['item','support'])
+    # conditionalPatternBaseTable = generateConditionalPatternBase(itemSupportTable,jsonifiedFpTree)
+
+    # print(conditionalPatternBaseTable)
+    # # Debug shit
+    # for index in range(conditionalPatternBaseTable.shape[0]):
+    #     print('\n Conditional Patterns for item: ', \
+    #         conditionalPatternBaseTable.iloc[index]['item'], \
+    #         ' are: \n')
+    #     for item in conditionalPatternBaseTable.iloc[index]['ConditionalPattern']:
+    #         print(item)
     
 
 if __name__ == '__main__':
