@@ -9,7 +9,7 @@ import json
 import time
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.types import IntegerType, ArrayType, StringType
+from pyspark.sql.types import IntegerType, ArrayType, StringType, MapType
 from pyspark.sql import functions as F 
 from pyspark.sql.functions import udf, array
  
@@ -185,12 +185,9 @@ def main():
     )
     print('\nThe generated conditional patterns are: ')
     conditional_patterns.show()
-    # Debug stuff
-    debug = conditional_patterns.select('conditional_patterns').take(2)
-    print(debug)
-
+    
     # Use a UDF to generate the subsets of a given item on the item support table
-    generateSubset = udf(lambda x: generatePowerset(x[0],x[1], 366), StringType())
+    generateSubset = udf(lambda x: generatePowerset(x[0],x[1], 3), ArrayType(MapType(StringType(), StringType())))
     # Apply the function 
     items_subset = conditional_patterns.select(
         'individual_items',
@@ -207,6 +204,18 @@ def main():
     debug = items_subset.select('conditional_patterns_set').take(2)
     print('The subsets are: ',debug)
     
+    exploded_items_subset = items_subset.select(
+            F.explode_outer('conditional_patterns_set').alias('items')
+        )
+    print('The exploded transactions data is: \n')
+    exploded_items_subset.show() # Show in the console
+
+    # Collect the df to pass the rule generating func
+    collected_exploded_items_subset = exploded_items_subset.select('items').collect()
+    collectedList = [row.items for row in collected_exploded_items_subset]
+
+    print(collectedList)
+
     # # Collect
     # collectedRowsData = filtered_odered_freqs_concat.select('item_freq').collect()
     # # Convert into list

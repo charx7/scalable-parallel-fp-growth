@@ -41,10 +41,13 @@ def generatePowerset(item, conditional_patterns, threshold):
            for sets in listOfPowerset:
                #tup = tuple(item)
                tup = (item, )
-               print('The type of sets is: ',type(sets))
                print('The sets object is: ',sets)
+               print('The type of sets is: ',type(sets))
                print('The tuple of sets object is: ', (sets,))
-               tupleToAppend = (sets,) + tup
+               if not isinstance(sets, tuple):
+                   sets = (sets,)
+
+               tupleToAppend = sets + tup
                stringToAppend = str(tupleToAppend)
                print('The string to append is: ', stringToAppend)
                dictToAppend = {
@@ -60,7 +63,7 @@ def generatePowerset(item, conditional_patterns, threshold):
        if (mydict["freq"] >= threshold):
            finalList.append(mydict)
 
-   return str(finalList)
+   return finalList
 
 ### It will call the find_values function for all the items in the itemSupportTable
 # It will store all the possible patterns in the data frame for a particular item.
