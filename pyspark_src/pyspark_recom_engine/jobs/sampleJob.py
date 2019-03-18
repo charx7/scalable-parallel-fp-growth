@@ -1,10 +1,11 @@
 from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
 from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge
-from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset
+from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset, generate_association_rules
 # Own imports
 #from pyspark_recom_engine import list_sorter
 import json
+import pprint
 #import pandas as pd
 import time
 from pyspark.sql import SparkSession, SQLContext
@@ -210,11 +211,22 @@ def main():
     print('The exploded transactions data is: \n')
     exploded_items_subset.show() # Show in the console
 
-    # Collect the df to pass the rule generating func
+    # Collect the first list to pass the rule generating func
     collected_exploded_items_subset = exploded_items_subset.select('items').collect()
-    collectedList = [row.items for row in collected_exploded_items_subset]
+    first_collectedList = [row.items for row in collected_exploded_items_subset]
+    # Pretty print
+    pprint.pprint(first_collectedList)
 
-    print(collectedList)
+    # Collect the second list to pass the rule generating func 
+    collected_exploded_single_item_freq = filtered_odered_freqs_concat.select('item_freq').collect()
+    second_collectedList = [row.item_freq for row in collected_exploded_single_item_freq]
+    # Pretty print
+    pprint.pprint(second_collectedList)
+
+    # Rules generation
+    # threshold
+    final_output = generate_association_rules(first_collectedList, second_collectedList, 0.5)
+    print('The generated rules are: \n', final_output)
 
     # # Collect
     # collectedRowsData = filtered_odered_freqs_concat.select('item_freq').collect()
