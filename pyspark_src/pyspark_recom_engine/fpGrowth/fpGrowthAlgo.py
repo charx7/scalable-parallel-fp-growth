@@ -32,7 +32,7 @@ class TreeNode:
     def makeDictionary(self, depth=0, parentList=[]):
        # parentList2 = []
         # print(self._parent, depth, self._itemName, parentList)
-        if self._parent is not None:
+        if self._parent is not None and self._parent != 'root':
             parentList = parentList + [self._parent]
 
         if len(self.children) == 0:
@@ -172,9 +172,15 @@ if __name__ == "__main__":
         ['K', 'E', 'O', 'Y'],
         ['E', 'O', 'M']
     ]
+    
+
     # breakpoint()
     fpTree1 = CreateTree(testData)
     fpTree2 = CreateTree(testData2)
+
+    # Display test
+    print('the non root tree is: ')
+    fpTree1.display()
 
     mergedTree = mainMerge(fpTree1, fpTree2)
     print(type(mergedTree))

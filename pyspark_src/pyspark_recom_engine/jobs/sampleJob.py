@@ -213,7 +213,7 @@ def main():
 
     # Collect the first list to pass the rule generating func
     collected_exploded_items_subset = exploded_items_subset.select('items').collect()
-    first_collectedList = [row.items for row in collected_exploded_items_subset]
+    first_collectedList = [row.items for row in collected_exploded_items_subset if row.items != None]
     # Pretty print
     pprint.pprint(first_collectedList)
 
