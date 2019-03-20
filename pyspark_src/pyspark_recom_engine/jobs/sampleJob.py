@@ -97,7 +97,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.005
+    threshold = 0.002
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -225,8 +225,9 @@ def main():
 
     # Rules generation
     # threshold
-    final_output = generate_association_rules(first_collectedList, second_collectedList, 0.5)
-    print('The generated rules are: \n', final_output)
+    final_output = generate_association_rules(first_collectedList, second_collectedList, 0.1)
+    print('The generated rules are: \n') 
+    pprint.pprint(final_output)
 
     # # Collect
     # collectedRowsData = filtered_odered_freqs_concat.select('item_freq').collect()

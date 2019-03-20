@@ -1,6 +1,28 @@
 version: "3"
 
 services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      # why change? default should be 2181
+      - '2182:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - spark-network
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    networks:
+      - spark-network
+    volumes:
+      - kafka:/data/kafka
+    depends_on:
+      - zookeeper
   spark-mongo:
     image: mongo
     ports:
@@ -38,3 +60,4 @@ networks:
 volumes:
   mongodb:
   mongodb_config:
+  kafka:

@@ -116,7 +116,6 @@ def generate_association_rules(finalPatternList, itemSupportList, confidence_thr
        for i in range(1, len(itemset["ConditionalPatternSets"])):
            for boughtItem in itertools.combinations(itemset["ConditionalPatternSets"], i):
                boughtItem = tuple(sorted(boughtItem))
-               print()
                suggestedItem = tuple(sorted(set(itemset["ConditionalPatternSets"]) - set(boughtItem)))
 
                #if (d['ConditionalPatternSets'] == boughtItem for d in mergedList):
