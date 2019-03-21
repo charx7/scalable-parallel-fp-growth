@@ -1,16 +1,14 @@
-""" Read test data from Kafka to ensure producer and broker are working """
+from kafka import KafkaConsumer
 import json
 
-from kafka import KafkaConsumer
-
-# To consume latest messages and auto-commit offsets
-consumer = KafkaConsumer('test-topic',
-                        #  group_id='test-consumer',
-                        #  bootstrap_servers='localhost:9092',
-                        #api_version=(0, 10, 1)
-                         )
-
-for message in consumer:
-    # message value and key are raw bytes -- decode if necessary!
-    # e.g., for unicode: `message.value.decode('utf-8')`
-    print(message)
+try:
+    print('Welcome to parse engine')
+    consumer = KafkaConsumer('test-topic', bootstrap_servers=['kafka:29092'])
+    for message in consumer:
+        print('im a message')
+        print(message)
+        
+except Exception as e:
+    print(e)
+    # Logs the error appropriately. 
+    pass

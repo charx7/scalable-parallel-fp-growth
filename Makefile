@@ -6,6 +6,7 @@ help:
 	@echo "clean-cluster - Will stop and remove the containers from your system"
 	@echo "package-pyspark-app: - Will package a python egg to submit into spark"
 	@echo "start-mongo:  - Will start a mongodb container with a volume on ./data/"
+	@echo "stream-data:  - Will start the (producer) streamer container that sends data to kafka"
 
 # Here the $(shell ) tag is needed to execute shell comands
 start-mongo:
@@ -50,3 +51,10 @@ clean-cluster:
 	@echo "Removing the network..."
 	@docker network rm spark-network
 	@docker ps -a
+
+stream-data:
+	@echo "Streaming data from the streamingProducer container"
+	@echo "Add sleep 60000 to debug the container"
+	@docker build --rm -t python-streamer ./streamingProducer
+	@docker run --rm --name producer-container --network spark-network python-streamer
+	
