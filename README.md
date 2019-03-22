@@ -114,8 +114,8 @@ mkdir restore
 - Navigate to the directory where you have the db dump and copy both files from your computer to the docker volume via docker cp
 
 ```
-docker cp transcations.bson {YOUR_DIRECTORY_NAME}_spark-mongo_1:/data/restore
-docker cp transcations.metadata.json {YOUR_DIRECTORY_NAME}_spark-mongo_1:/data/restore
+docker cp transactions.bson {YOUR_DIRECTORY_NAME}_spark-mongo_1:/data/restore
+docker cp transactions.metadata.json {YOUR_DIRECTORY_NAME}_spark-mongo_1:/data/restore
 ```
 
 - Inside the mongo docker container run the mongo restore command at the data restore directory

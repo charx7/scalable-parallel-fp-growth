@@ -44,7 +44,7 @@ def main():
     transactions_data = spark_session.read \
         .format("com.mongodb.spark.sql.DefaultSource") \
         .option("database", "transactions") \
-        .option("collection", "transcations") \
+        .option("collection", "transactions") \
         .load()
 
     print("The generated transactions schema is: \n")

@@ -3,7 +3,10 @@ import json
 
 try:
     print('Welcome to parse engine')
-    consumer = KafkaConsumer('test-topic', bootstrap_servers=['kafka:29092'])
+    # From inside a container
+    #consumer = KafkaConsumer('test-topic', bootstrap_servers='kafka:29092')
+    # From localhost
+    consumer = KafkaConsumer('test-topic', bootstrap_servers='localhost:9092', auto_offset_reset='earliest')
     for message in consumer:
         print('im a message')
         print(message)
