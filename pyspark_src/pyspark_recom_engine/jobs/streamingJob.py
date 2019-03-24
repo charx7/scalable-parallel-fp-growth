@@ -11,7 +11,7 @@ def main():
     ssc = StreamingContext(sc, 10)
 
     kafkaStream = KafkaUtils.createStream(
-        ssc, 'zookeeper:2181', 'PLAINTEXT', {'test-topic': 1},)
+        ssc, 'zookeeper:2181', 'spark-stream', {'test-topic': 1},)
 
     lines = kafkaStream.map(lambda x: x[1])
 
