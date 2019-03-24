@@ -9,3 +9,5 @@ pyspark_src/pyspark/dist
 pyspark_src/dependencies/
 pyspark_src/dependencies.zip
 virtual_env
+.vscode
+.idea

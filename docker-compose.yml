@@ -1,0 +1,74 @@
+version: "3"
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - spark-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks: 
+        - spark-network
+  # streamer:
+  #   build:
+  #     context: ./streamingProducer/
+  #   networks: 
+  #     - spark-network
+  #   depends_on:
+  #     - kafka
+  #     - spark-master
+  #     - spark-worker-1
+
+  spark-mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - spark-network
+    command: mongod
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+  spark-master:
+    build:
+      context: ./spark_master/
+    ports:
+      - "7077:7077"
+      #- "4040:4040"
+      - "8080:8080"
+    networks:
+      - spark-network
+    depends_on:
+      - spark-mongo
+  spark-worker-1:
+    build:
+      context: ./pyspark_worker/
+    ports:
+      - "8081:8081"
+    networks:
+      - spark-network
+    depends_on:
+      - spark-mongo
+networks:
+  spark-network:
+    external:
+      name: spark-network
+volumes:
+  mongodb:
+  mongodb_config:
+  kafka:
