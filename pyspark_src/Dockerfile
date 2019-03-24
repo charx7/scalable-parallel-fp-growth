@@ -7,14 +7,14 @@ COPY template.sh /
 
 # Install the damn C libraries because pandas needs to compile C code
 #ARG PANDAS_VERSION=0.24.1
-RUN apk add --no-cache python3-dev libstdc++ && \
-    apk add --no-cache --virtual .build-deps g++ && \
-    apk add --no-cache --update gcc musl-dev libffi-dev openssl-dev && \
-    apk add build-base && \
-    ln -s /usr/include/locale.h /usr/include/xlocale.h && \
-    pip3 install numpy==1.15.1 && \
-    pip3 install cython && \
-    apk del .build-deps
+# RUN apk add --no-cache python3-dev libstdc++ && \
+#     apk add --no-cache --virtual .build-deps g++ && \
+#     apk add --no-cache --update gcc musl-dev libffi-dev openssl-dev && \
+#     apk add build-base && \
+#     ln -s /usr/include/locale.h /usr/include/xlocale.h && \
+#     pip3 install numpy==1.15.1 && \
+#     pip3 install cython && \
+#     apk del .build-deps
 
 # Copy the requirements.txt first, for separate dependency resolving and downloading
 COPY requirements.txt /app/
