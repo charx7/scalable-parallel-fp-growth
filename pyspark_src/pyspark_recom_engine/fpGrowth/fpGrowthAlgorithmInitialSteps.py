@@ -1,6 +1,6 @@
 
 from collections import Counter
-import pandas as pd
+#import pandas as pd
 
 
 ## Will generate the support count table for all the items present in all the transaction

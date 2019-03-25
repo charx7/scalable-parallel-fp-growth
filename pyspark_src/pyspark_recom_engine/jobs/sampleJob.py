@@ -98,7 +98,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.0002
+    threshold = 0.0007
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
