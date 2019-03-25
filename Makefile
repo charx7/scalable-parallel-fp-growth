@@ -42,6 +42,8 @@ submit-app:
 	@docker build --rm -t submit-pyspark-job ./pyspark_src/
 	@echo "Image built, now running the submit container" 
 	@docker run --rm --name pyspark-app -e ENABLE_INIT_DAEMON=false -p 4040:4040 --network spark-network submit-pyspark-job
+	@echo "Removing hanging images..."
+	@docker rmi $(shell docker images -f "dangling=true" -q)
 
 submit-stream:
 	@echo "Package python app -> Built Docker Image -> Run the Submit container"

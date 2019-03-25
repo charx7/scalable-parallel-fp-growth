@@ -31,7 +31,7 @@ ENV SPARK_MASTER_PORT "7077"
 # Not sure if will work with this (this should be built by a parent image!)
 ENV SPARK_MASTER_URL "spark://spark-master:7077"
 # Should be this or directly the python egg?
-ENV SPARK_APPLICATION_PYTHON_LOCATION app/pyspark_recom_engine/jobs/sampleJob.py
+ENV SPARK_APPLICATION_PYTHON_LOCATION app/pyspark_recom_engine/jobs/FpJob.py
 # Extra (Maybe will be needed after?)
 ENV SPARK_APPLICATION_ARGS "foo bar baz"
 # Add the python egg for inter-package dependancies 
