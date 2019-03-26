@@ -58,7 +58,34 @@ class TreeNode:
             }
         }
 
-def CreateLocalTree(tupledData):
+# parse data as a dict
+def createInitSet(dataSet):
+    retDict = {}
+    for trans in dataSet:
+        retDict[frozenset(trans)] = 1
+    return retDict
+
+def CreateLocalTree(tupledData, minSup):
+    # transform into format
+    simpData = createInitSet(tupledData)
+
+    headerTable = {}
+    #go over dataSet twice
+    for trans in simpData:#first pass counts frequency of occurance
+        for item in trans:
+            headerTable[item] = headerTable.get(item, 0) + simpData[trans]
+    
+    # Remove items that dont have min support
+    for k in list(headerTable):  #remove items not meeting minSup
+        if headerTable[k] < minSup: 
+            del(headerTable[k])
+    freqItemSet = set(headerTable.keys())
+    print ('freqItemSet: ',freqItemSet)
+
+    for k in headerTable:
+        headerTable[k] = [headerTable[k], None] #reformat headerTable to use Node link 
+    print ('headerTable: ',headerTable)
+
     root = TreeNode('root', 0, None)
     
     for transaction in tupledData:
@@ -94,7 +121,7 @@ def CreateTree(data):
     return root
 
 def updateTree(item, previousItems, tree):
-    if item in tree.children:
+    if item in tree.children and len(previousItems) == 0:
         # increment the frequency for that item
         tree.children[item].incrementFreq()
     # If not we create a child
@@ -165,7 +192,7 @@ def test2():
     print('Executing local tree creation test...')
     # Note assume that a key is 2
     data = [('44871', ), ('22396', '44871', '22088', '44865')] 
-    localTree = CreateLocalTree(data)
+    localTree = CreateLocalTree(data, 1)
     localTree.display()
 
 # Test of the global tree
