@@ -2,6 +2,7 @@ from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
 from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge
 from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset, generate_association_rules
+from pyspark_recom_engine.fpGrowth.fpGrowthParallel import mapTransactions
 # Own imports
 #from pyspark_recom_engine import list_sorter
 import json
@@ -73,7 +74,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.006
+    threshold = 0.001
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -115,14 +116,26 @@ def main():
     print('######### Start Map phase #############')
     start = time.time()
     # Map step to the resulting dataframe 
-    testPrint = sorted_data.select(
-        'OrderedProductCode').rdd.map(lambda x: CreateTree(x))
-
+    flattenedMappedProducts = sorted_data.select(
+        'OrderedProductCode').rdd \
+            .flatMap(lambda x: mapTransactions(orderedItemsDict,x.OrderedProductCode)) \
+            #.flatMap(lambda x: x) \
+            #.map(lambda x: x[0])
     end = time.time()
     print('Time Elapsed: ', end - start)
     print('######### End Map phase ###############')
+
+    print('######### Start Reduce phase #############')
+    start = time.time()
+    reducedProducts = flattenedMappedProducts.reduceByKey(lambda a, b: a + b)
+    end = time.time()
+    print('Time Elapsed: ', end - start)
+    print('######### End Reduce phase ###############')
     
-    pprint.pprint(orderedItemsDict)
+    results = reducedProducts.take(5)
+    print(results)
+    #pprint.pprint(orderedItemsDict)
+
 
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func

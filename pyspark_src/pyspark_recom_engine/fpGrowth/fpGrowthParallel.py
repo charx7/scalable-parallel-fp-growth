@@ -1,12 +1,19 @@
 def hashNum(hashTable, item):
     return hashTable[item]
 
-def mapTransactions(header_table, transaction):
-    start = len(sample_transaction) - 1
+def mapTransactions(int_header_table, transaction):
+    header_table = {}
+    for k in int_header_table.keys():
+        header_table[str(k)] = int_header_table[k]
+    print('The header table is: ', header_table)
+    print('The transaction is: ', transaction)
+
+    start = len(transaction) - 1
     stop = 0
     step = -1
+    keyValuesToEmit = []
     for i in range(start, stop, step):
-        currItem = sample_transaction[i]
+        currItem = transaction[i]
         currHash = hashNum(header_table, currItem)
         
         if currHash != None:
@@ -18,12 +25,16 @@ def mapTransactions(header_table, transaction):
                 #print(header_table.keys())
 
         # Emit the current k,v pair
-        currValue = sample_transaction[0:i]
+        currValue = transaction[0:i]
         currKey   = currHash
-        tupleToEmit = (currKey, currValue)
+        tupleToEmit = (currKey, tuple(currValue))
+        keyValuesToEmit.append(tupleToEmit)
         #print('\nTo emit as value: ',currValue)
         #print('To emit as key: ', currHash)
         print('Tuple to emit: ', tupleToEmit)
+    
+    # Return value
+    return keyValuesToEmit
                         
 
 if __name__ == "__main__":
@@ -45,5 +56,7 @@ if __name__ == "__main__":
     #listKeys = [k  for  k in  header_table.keys()]
     #header_table_keys = list(header_table.keys())
     
-    mapTransactions(header_table, sample_transaction)
+    example = mapTransactions(header_table, sample_transaction)
+    
+    print('Executing reducer test...')
     

@@ -12,7 +12,7 @@ def list_sorter(transaction, sorted_items_dict):
         if row in filtered_transaction:
             ordered_transaction_list.append(row)
     
-    if len(ordered_transaction_list) == 0:
+    if len(ordered_transaction_list) == 0 or len(ordered_transaction_list) == 1:
         return None
 
     return ordered_transaction_list
