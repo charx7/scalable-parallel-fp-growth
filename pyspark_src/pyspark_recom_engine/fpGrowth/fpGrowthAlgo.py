@@ -8,7 +8,6 @@
 import json
 # Define a node on the tree
 
-
 class TreeNode:
     # Class constructor
     def __init__(self, item_value, frequency_value, parent_value):
@@ -59,23 +58,29 @@ class TreeNode:
             }
         }
 
-
-# This method will create the fp-tree
+def CreateLocalTree(tupledData):
+    root = TreeNode('root', 0, None)
+    
+    for transaction in tupledData:
+        # For each item on the current transaction
+        previousItemsList = []
+        
+        for item in transaction:
+            # Have to clone the object because the pop() method is messing outside of scope
+            previousItemsArgument = previousItemsList.copy()
+            updateTree(item, previousItemsArgument, root)
+            # Save a reference to the previous item
+            previousItemsList.append(item)
+    # Return with the grown tree
+    return root
 '''
     @data must be sorted and filtered by frequency count
 '''
-
-
 def CreateTree(data):
-    # rootNode = TreeNode('root',1,None)
-    # rootNode.children['something'] = TreeNode('something',3,None)
-    # rootNode.display()
-
     # Create a root node object of type TreeNode
     root = TreeNode('root', 0, None)
-
+    
     # Recursively grow the fp-tree
-
     for transaction in data:
         # For each item on the current transaction
         previousItemsList = []
@@ -86,10 +91,7 @@ def CreateTree(data):
             # Save a reference to the previous item
             previousItemsList.append(item)
     # Return with the grown tree
-
-    # return json.dumps(root.makeDictionary())
     return root
-
 
 def updateTree(item, previousItems, tree):
     if item in tree.children:
@@ -113,7 +115,6 @@ def updateTree(item, previousItems, tree):
             newNode = TreeNode(item, 1, tree._itemName)
             # Append it to the children dict
             tree.children[item] = newNode
-
 
 def mergeTree(tree1, tree2, baseTree, depth=0):
     currentNodeName = baseTree._itemName
@@ -156,8 +157,19 @@ def mainMerge(tree1, tree2):
 
     return finalTree
 
+# Main func
+def main():
+    test2()
 
-if __name__ == "__main__":
+def test2():
+    print('Executing local tree creation test...')
+    # Note assume that a key is 2
+    data = [('44871', ), ('22396', '44871', '22088', '44865')] 
+    localTree = CreateLocalTree(data)
+    localTree.display()
+
+# Test of the global tree
+def test1():
     # to test the tree
     testData = [
         ['K', 'E', 'M', 'O', 'Y'],
@@ -173,7 +185,6 @@ if __name__ == "__main__":
         ['E', 'O', 'M']
     ]
     
-
     # breakpoint()
     fpTree1 = CreateTree(testData)
     fpTree2 = CreateTree(testData2)
@@ -185,3 +196,7 @@ if __name__ == "__main__":
     mergedTree = mainMerge(fpTree1, fpTree2)
     print(type(mergedTree))
     print(mergedTree.display())
+
+if __name__ == "__main__":
+    main()  
+  

@@ -5,8 +5,8 @@ def mapTransactions(int_header_table, transaction):
     header_table = {}
     for k in int_header_table.keys():
         header_table[str(k)] = int_header_table[k]
-    print('The header table is: ', header_table)
-    print('The transaction is: ', transaction)
+    #print('The header table is: ', header_table)
+    #print('The transaction is: ', transaction)
 
     start = len(transaction) - 1
     stop = 0
@@ -59,4 +59,3 @@ if __name__ == "__main__":
     example = mapTransactions(header_table, sample_transaction)
     
     print('Executing reducer test...')
-    

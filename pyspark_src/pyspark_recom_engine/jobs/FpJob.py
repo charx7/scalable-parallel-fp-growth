@@ -1,6 +1,6 @@
 from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
-from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge
+from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge, CreateLocalTree
 from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset, generate_association_rules
 from pyspark_recom_engine.fpGrowth.fpGrowthParallel import mapTransactions
 # Own imports
@@ -127,13 +127,15 @@ def main():
 
     print('######### Start Reduce phase #############')
     start = time.time()
-    reducedProducts = flattenedMappedProducts.reduceByKey(lambda a, b: a + b)
+    #reducedProducts = flattenedMappedProducts.reduceByKey(lambda x, y: tuple(zip(x, y)))
+    reducedProducts = flattenedMappedProducts.groupByKey().map(lambda x:(x[0], list(x[1])))
+    localTrees = reducedProducts.map(lambda x: CreateLocalTree(x[1]))
     end = time.time()
     print('Time Elapsed: ', end - start)
     print('######### End Reduce phase ###############')
     
-    results = reducedProducts.take(5)
-    print(results)
+    results = localTrees.take(2)
+    pprint.pprint(results)
     #pprint.pprint(orderedItemsDict)
 
 
