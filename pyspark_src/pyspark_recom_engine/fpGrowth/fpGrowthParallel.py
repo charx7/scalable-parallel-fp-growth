@@ -1,12 +1,21 @@
+import collections
+
+def getConditionalItems(ConditionalDatabase, threshold):
+   fpTreeDict={}
+   allConditionalItems = list(ConditionalDatabase[1])
+   counter=collections.Counter(allConditionalItems)
+   itemsDict = (dict(counter))
+   for k,v in itemsDict.items():
+       if v >= threshold:
+           fpTreeDict[k]= v
+   groupId = ConditionalDatabase[0]
+   return (groupId,fpTreeDict)
+
 def hashNum(hashTable, item):
     return hashTable[item]
 
-def mapTransactions(int_header_table, transaction):
-    header_table = {}
-    for k in int_header_table.keys():
-        header_table[str(k)] = int_header_table[k]
-    #print('The header table is: ', header_table)
-    #print('The transaction is: ', transaction)
+def mapTransactions(header_table, transaction):
+    header_table_copy = header_table.copy()
 
     start = len(transaction) - 1
     stop = 0
@@ -14,13 +23,13 @@ def mapTransactions(int_header_table, transaction):
     keyValuesToEmit = []
     for i in range(start, stop, step):
         currItem = transaction[i]
-        currHash = hashNum(header_table, currItem)
+        currHash = hashNum(header_table_copy, currItem)
         
         if currHash != None:
             # Delete currHash from the Hash table since it has already been processed
-            if currHash in header_table.values():
+            if currHash in header_table_copy.values():
                 # Delete the current item 
-                header_table.pop(currItem)
+                header_table_copy.pop(currItem)
                 #print('the current keys on the ht are: ')
                 #print(header_table.keys())
 
@@ -41,14 +50,14 @@ if __name__ == "__main__":
     print('Executing test...')
 
     sample_transaction = [
-        'M', 'E', 'K'
+        '23', '24', '77'
     ]
     print('Processing the ordered and filtered transaction', sample_transaction)
 
     header_table = {
-        'M': 0,
-        'E': 1,
-        'K': 2
+        '23': 0,
+        '24': 1,
+        '77': 2
     }
 
     # debug stuff

@@ -2,7 +2,7 @@ from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
 from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge, CreateLocalTree
 from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset, generate_association_rules
-from pyspark_recom_engine.fpGrowth.fpGrowthParallel import mapTransactions
+from pyspark_recom_engine.fpGrowth.fpGrowthParallel import mapTransactions, getConditionalItems
 # Own imports
 #from pyspark_recom_engine import list_sorter
 import json
@@ -115,10 +115,16 @@ def main():
 
     print('######### Start Map phase #############')
     start = time.time()
+    
+    # Process the header table
+    header_table = {}
+    for k in orderedItemsDict.keys():
+        header_table[str(k)] = orderedItemsDict[k]
+    
     # Map step to the resulting dataframe 
     flattenedMappedProducts = sorted_data.select(
         'OrderedProductCode').rdd \
-            .flatMap(lambda x: mapTransactions(orderedItemsDict,x.OrderedProductCode)) \
+            .flatMap(lambda x: mapTransactions(header_table,x.OrderedProductCode)) \
             #.flatMap(lambda x: x) \
             #.map(lambda x: x[0])
     end = time.time()
@@ -127,15 +133,32 @@ def main():
 
     print('######### Start Reduce phase #############')
     start = time.time()
-    #reducedProducts = flattenedMappedProducts.reduceByKey(lambda x, y: tuple(zip(x, y)))
-    reducedProducts = flattenedMappedProducts.groupByKey().map(lambda x:(x[0], list(x[1])))
-    localTrees = reducedProducts.map(lambda x: CreateLocalTree(x[1]))
+    # Intersection method
+    reducedProducts = flattenedMappedProducts.reduceByKey(lambda x, y: x + y)
+    # Get conditional items (fp-tree)
+    conditionalPatterns = reducedProducts.map(lambda x: getConditionalItems(x, 50))
+
+    # Ascend tree method
+    #reducedProducts = flattenedMappedProducts.groupByKey().map(lambda x:(x[0], list(x[1])))
+    #localTrees = reducedProducts.map(lambda x: CreateLocalTree(x[1], 3))
+    
     end = time.time()
     print('Time Elapsed: ', end - start)
     print('######### End Reduce phase ###############')
     
-    results = localTrees.take(2)
-    pprint.pprint(results)
+    pprint.pprint(conditionalPatterns.take(2))
+
+    # # Collect the second list to pass the rule generating func
+    # collected_exploded_single_item_freq = filtered_odered_freqs_percent.select(
+    #     'item_freq').collect()
+    # second_collectedList = [
+    #     row.item_freq for row in collected_exploded_single_item_freq]
+    # # Pretty print
+    # print('The collected item support table: ')
+    # pprint.pprint(second_collectedList)
+
+    #results = localTrees.take(2)
+    #pprint.pprint(results)
     #pprint.pprint(orderedItemsDict)
 
 

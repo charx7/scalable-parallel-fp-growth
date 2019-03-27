@@ -67,13 +67,13 @@ def createInitSet(dataSet):
 
 def CreateLocalTree(tupledData, minSup):
     # transform into format
-    simpData = createInitSet(tupledData)
+    data = createInitSet(tupledData)
 
     headerTable = {}
     #go over dataSet twice
-    for trans in simpData:#first pass counts frequency of occurance
+    for trans in data:#first pass counts frequency of occurance
         for item in trans:
-            headerTable[item] = headerTable.get(item, 0) + simpData[trans]
+            headerTable[item] = headerTable.get(item, 0) + data[trans]
     
     # Remove items that dont have min support
     for k in list(headerTable):  #remove items not meeting minSup
@@ -86,6 +86,16 @@ def CreateLocalTree(tupledData, minSup):
         headerTable[k] = [headerTable[k], None] #reformat headerTable to use Node link 
     print ('headerTable: ',headerTable)
 
+    # Go trough the data to sort
+    for transaction, count in data.items():
+        localD = {}
+        for item in transaction: # Put transactions in order
+            if item in freqItemSet:
+                localD[item] = headerTable[item][0]
+            if len(localD) > 0:
+                orderedItems = [v[0] for v in sorted(localD.items(), key = lambda p: p[1], reverse = True)]
+
+    print('The ordered items are: ', orderedItems)
     root = TreeNode('root', 0, None)
     
     for transaction in tupledData:
