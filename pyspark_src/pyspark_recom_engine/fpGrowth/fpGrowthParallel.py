@@ -1,5 +1,33 @@
 import collections
+import itertools
 
+def generateRules(itemSupportTable, conditionalPatterns, headerTable ,confidence_threshold):
+   print('The conditional patterns are: ', conditionalPatterns)
+   print('The item support table is: ', itemSupportTable)
+   RulesList = []
+   for k, v in headerTable.items():
+       if v == conditionalPatterns[0]:
+           productCode = k
+
+   listOfProducts =  list(conditionalPatterns[1].keys())
+   for item in listOfProducts:
+       union_support = conditionalPatterns[1][item]
+       print('The union support is: ', union_support)
+       for boughtItem in itertools.combinations({productCode,item}, 2):
+           for i in boughtItem:
+               suggestedItem = tuple(set(boughtItem) - set((i,)))
+               print('The suggested item is: ', suggestedItem)
+
+               if int(suggestedItem[0]) in itemSupportTable.keys():
+                   support = itemSupportTable[int(suggestedItem[0])]
+                   confidence = float(union_support) / support
+                   print('The support is: ', support)
+                   print('The confidence is: ', confidence)
+                   if confidence >= confidence_threshold:
+                       RulesList.append({'boughtItem':tuple(set(boughtItem) - set(suggestedItem)),'suggestedItem':suggestedItem,'confidence':confidence})
+
+   return RulesList
+   
 def getConditionalItems(ConditionalDatabase, threshold):
    fpTreeDict={}
    allConditionalItems = list(ConditionalDatabase[1])
@@ -40,7 +68,7 @@ def mapTransactions(header_table, transaction):
         keyValuesToEmit.append(tupleToEmit)
         #print('\nTo emit as value: ',currValue)
         #print('To emit as key: ', currHash)
-        print('Tuple to emit: ', tupleToEmit)
+        #print('Tuple to emit: ', tupleToEmit)
     
     # Return value
     return keyValuesToEmit

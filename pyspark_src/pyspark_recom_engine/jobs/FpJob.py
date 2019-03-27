@@ -2,7 +2,7 @@ from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
 from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge, CreateLocalTree
 from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset, generate_association_rules
-from pyspark_recom_engine.fpGrowth.fpGrowthParallel import mapTransactions, getConditionalItems
+from pyspark_recom_engine.fpGrowth.fpGrowthParallel import mapTransactions, getConditionalItems, generateRules
 # Own imports
 #from pyspark_recom_engine import list_sorter
 import json
@@ -20,7 +20,6 @@ def main():
     '''
         Fp growth job according to the paper.
     '''
-    ###################################################
     # Read from the transactions restored db
     print("Reading from transactions db... \n")
     transactions_data = spark_session.read \
@@ -74,7 +73,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.001
+    threshold = 0.0007
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -136,7 +135,8 @@ def main():
     # Intersection method
     reducedProducts = flattenedMappedProducts.reduceByKey(lambda x, y: x + y)
     # Get conditional items (fp-tree)
-    conditionalPatterns = reducedProducts.map(lambda x: getConditionalItems(x, 50))
+    countThreshold = round(threshold * noOfTransactions)
+    conditionalPatterns = reducedProducts.map(lambda x: getConditionalItems(x, countThreshold))
 
     # Ascend tree method
     #reducedProducts = flattenedMappedProducts.groupByKey().map(lambda x:(x[0], list(x[1])))
@@ -146,20 +146,37 @@ def main():
     print('Time Elapsed: ', end - start)
     print('######### End Reduce phase ###############')
     
-    pprint.pprint(conditionalPatterns.take(2))
+    #pprint.pprint(conditionalPatterns.take(700))
 
-    # # Collect the second list to pass the rule generating func
-    # collected_exploded_single_item_freq = filtered_odered_freqs_percent.select(
-    #     'item_freq').collect()
-    # second_collectedList = [
-    #     row.item_freq for row in collected_exploded_single_item_freq]
-    # # Pretty print
-    # print('The collected item support table: ')
-    # pprint.pprint(second_collectedList)
+    # Collect the second list to pass the rule generating func
+    collected_item_support_table_names = filtered_odered_freqs_percent.select(
+        'individual_items').collect()
+    collected_item_support_table_freqs = filtered_odered_freqs_percent.select(
+        'count').alias('freqs').collect()
+    collectedItemSupportTableNames = [
+            row.individual_items for row in collected_item_support_table_names
+        ]
+    collectedItemSupportTableFreqs = [
+        row.asDict()['count'] for row in collected_item_support_table_freqs
+    ]
+    # Pretty print
+    print('The collected item support table: ')
+    itemSupportTable = dict(zip(collectedItemSupportTableNames, collectedItemSupportTableFreqs))
+    
+    # Rule generation mapper
+    print('######### Start Second Map phase #############')
+    start = time.time()
+    # Get the rules from a given conditional pattern
+    rules = conditionalPatterns.map(lambda x: generateRules(itemSupportTable, x, header_table, 0.01))
 
-    #results = localTrees.take(2)
-    #pprint.pprint(results)
-    #pprint.pprint(orderedItemsDict)
+    end = time.time()
+    print('Time Elapsed: ', end - start)
+    print('######### End Second Map phase ###############')
+    
+    rulesList = rules.collect()
+    rules_no_empty = [ record for record in rulesList if len(record)>0]
+    #print(itemSupportTable)
+    pprint.pprint(rules_no_empty)
 
 
 if __name__ == '__main__':
