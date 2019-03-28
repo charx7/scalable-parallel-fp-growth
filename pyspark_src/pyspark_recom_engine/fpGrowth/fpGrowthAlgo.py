@@ -8,7 +8,6 @@
 import json
 # Define a node on the tree
 
-
 class TreeNode:
     # Class constructor
     def __init__(self, item_value, frequency_value, parent_value):
@@ -59,23 +58,66 @@ class TreeNode:
             }
         }
 
+# parse data as a dict
+def createInitSet(dataSet):
+    retDict = {}
+    for trans in dataSet:
+        retDict[frozenset(trans)] = 1
+    return retDict
 
-# This method will create the fp-tree
+def CreateLocalTree(tupledData, minSup):
+    # transform into format
+    data = createInitSet(tupledData)
+
+    headerTable = {}
+    #go over dataSet twice
+    for trans in data:#first pass counts frequency of occurance
+        for item in trans:
+            headerTable[item] = headerTable.get(item, 0) + data[trans]
+    
+    # Remove items that dont have min support
+    for k in list(headerTable):  #remove items not meeting minSup
+        if headerTable[k] < minSup: 
+            del(headerTable[k])
+    freqItemSet = set(headerTable.keys())
+    print ('freqItemSet: ',freqItemSet)
+
+    for k in headerTable:
+        headerTable[k] = [headerTable[k], None] #reformat headerTable to use Node link 
+    print ('headerTable: ',headerTable)
+
+    # Go trough the data to sort
+    for transaction, count in data.items():
+        localD = {}
+        for item in transaction: # Put transactions in order
+            if item in freqItemSet:
+                localD[item] = headerTable[item][0]
+            if len(localD) > 0:
+                orderedItems = [v[0] for v in sorted(localD.items(), key = lambda p: p[1], reverse = True)]
+
+    print('The ordered items are: ', orderedItems)
+    root = TreeNode('root', 0, None)
+    
+    for transaction in tupledData:
+        # For each item on the current transaction
+        previousItemsList = []
+        
+        for item in transaction:
+            # Have to clone the object because the pop() method is messing outside of scope
+            previousItemsArgument = previousItemsList.copy()
+            updateTree(item, previousItemsArgument, root)
+            # Save a reference to the previous item
+            previousItemsList.append(item)
+    # Return with the grown tree
+    return root
 '''
     @data must be sorted and filtered by frequency count
 '''
-
-
 def CreateTree(data):
-    # rootNode = TreeNode('root',1,None)
-    # rootNode.children['something'] = TreeNode('something',3,None)
-    # rootNode.display()
-
     # Create a root node object of type TreeNode
     root = TreeNode('root', 0, None)
-
+    
     # Recursively grow the fp-tree
-
     for transaction in data:
         # For each item on the current transaction
         previousItemsList = []
@@ -86,13 +128,10 @@ def CreateTree(data):
             # Save a reference to the previous item
             previousItemsList.append(item)
     # Return with the grown tree
-
-    # return json.dumps(root.makeDictionary())
     return root
 
-
 def updateTree(item, previousItems, tree):
-    if item in tree.children:
+    if item in tree.children and len(previousItems) == 0:
         # increment the frequency for that item
         tree.children[item].incrementFreq()
     # If not we create a child
@@ -113,7 +152,6 @@ def updateTree(item, previousItems, tree):
             newNode = TreeNode(item, 1, tree._itemName)
             # Append it to the children dict
             tree.children[item] = newNode
-
 
 def mergeTree(tree1, tree2, baseTree, depth=0):
     currentNodeName = baseTree._itemName
@@ -156,8 +194,19 @@ def mainMerge(tree1, tree2):
 
     return finalTree
 
+# Main func
+def main():
+    test2()
 
-if __name__ == "__main__":
+def test2():
+    print('Executing local tree creation test...')
+    # Note assume that a key is 2
+    data = [('44871', ), ('22396', '44871', '22088', '44865')] 
+    localTree = CreateLocalTree(data, 1)
+    localTree.display()
+
+# Test of the global tree
+def test1():
     # to test the tree
     testData = [
         ['K', 'E', 'M', 'O', 'Y'],
@@ -173,7 +222,6 @@ if __name__ == "__main__":
         ['E', 'O', 'M']
     ]
     
-
     # breakpoint()
     fpTree1 = CreateTree(testData)
     fpTree2 = CreateTree(testData2)
@@ -185,3 +233,7 @@ if __name__ == "__main__":
     mergedTree = mainMerge(fpTree1, fpTree2)
     print(type(mergedTree))
     print(mergedTree.display())
+
+if __name__ == "__main__":
+    main()  
+  
