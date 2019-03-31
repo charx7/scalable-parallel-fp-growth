@@ -188,7 +188,7 @@ def main():
         .mode("overwrite") \
         .save()
     print("\nSucces writing to the mongodb!")
-    time.sleep(1000000)
+    #time.sleep(1000000)
     #For debug
     #result = filtered_rules.collect()
     #pprint.pprint(result)

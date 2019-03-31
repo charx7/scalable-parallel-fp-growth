@@ -63,6 +63,7 @@ services:
     networks:
       - spark-network
     depends_on:
+      - spark-master
       - spark-mongo
   spark-worker-2:
     build:
@@ -72,6 +73,7 @@ services:
     networks:
       - spark-network
     depends_on:
+      - spark-master
       - spark-mongo
 networks:
   spark-network:
