@@ -64,6 +64,15 @@ services:
       - spark-network
     depends_on:
       - spark-mongo
+  spark-worker-2:
+    build:
+      context: ./pyspark_worker/
+    ports:
+      - "8082:8081"
+    networks:
+      - spark-network
+    depends_on:
+      - spark-mongo
 networks:
   spark-network:
     external:

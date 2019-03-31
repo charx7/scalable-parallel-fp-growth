@@ -73,7 +73,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.0007
+    threshold = 0.0002
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -187,7 +187,8 @@ def main():
         .option("collection", "recommendations") \
         .mode("overwrite") \
         .save()
-    print("\nSucces writing to the mongodb!...")
+    print("\nSucces writing to the mongodb!")
+    time.sleep(1000000)
     #For debug
     #result = filtered_rules.collect()
     #pprint.pprint(result)
