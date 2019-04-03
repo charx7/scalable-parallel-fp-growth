@@ -1,5 +1,12 @@
-# Extend the spark python template dockerimage
-FROM bde2020/spark-worker:2.4.0-hadoop2.7
+FROM bde2020/spark-base:2.4.0-hadoop2.7
+
+COPY worker.sh /
+
+ENV SPARK_WORKER_WEBUI_PORT 8081
+ENV SPARK_WORKER_LOG /spark/logs
+ENV SPARK_MASTER "spark://spark-master:7077"
+
+EXPOSE 8081
 
 # Copy the requirements.txt first, for separate dependency resolving and downloading
 # the -p is to make it recursive
@@ -12,5 +19,4 @@ RUN cd /app \
 ENV SPARK_MASTER_NAME "spark-master"
 ENV SPARK_MASTER_PORT "7077"
 
-#### Commands for the submit image ####
-#ENV SPARK_APPLICATION_ARGS
+CMD ["/bin/bash", "/worker.sh"]

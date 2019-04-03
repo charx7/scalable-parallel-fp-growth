@@ -25,7 +25,7 @@ def generateRules(itemSupportTable, conditionalPatterns, headerTable ,confidence
                    print('The confidence is: ', confidence)
                    if confidence >= confidence_threshold:
                        RulesList.append({'boughtItem':tuple(set(boughtItem) - set(suggestedItem)),'suggestedItem':suggestedItem,'confidence':confidence})
-
+    
    return RulesList
    
 def getConditionalItems(ConditionalDatabase, threshold):

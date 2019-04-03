@@ -73,7 +73,7 @@ def main():
         ordered_freqs['count'] / float(noOfTransactions)
     )
     # # How many transactions are above 1%?
-    threshold = 0.0007
+    threshold = 0.0002
     filtered_odered_freqs_percent = ordered_freqs_percents \
         .select("*") \
         .filter(
@@ -167,16 +167,35 @@ def main():
     print('######### Start Second Map phase #############')
     start = time.time()
     # Get the rules from a given conditional pattern
-    rules = conditionalPatterns.map(lambda x: generateRules(itemSupportTable, x, header_table, 0.01))
+    rules = conditionalPatterns.flatMap(lambda x: generateRules(itemSupportTable, x, header_table, 0.05))
 
     end = time.time()
     print('Time Elapsed: ', end - start)
     print('######### End Second Map phase ###############')
-    
-    rulesList = rules.collect()
-    rules_no_empty = [ record for record in rulesList if len(record)>0]
-    #print(itemSupportTable)
-    pprint.pprint(rules_no_empty)
+
+    # Show records
+    filtered_rules = rules.filter(lambda x: x != {})
+
+    # Convert into a df for writing to the db
+    rules_df = filtered_rules.toDF(['bought-item(s)','confidence','suggested-item(s)'])
+    rules_df.show()
+
+    print("Writing to the mongodb...")
+    rules_df.write.format(
+        "com.mongodb.spark.sql.DefaultSource") \
+        .option("database", "transactions") \
+        .option("collection", "recommendations") \
+        .mode("overwrite") \
+        .save()
+    print("\nSucces writing to the mongodb!")
+    #time.sleep(1000000)
+    #For debug
+    #result = filtered_rules.collect()
+    #pprint.pprint(result)
+    # rulesList = rules.collect()
+    # rules_no_empty = [ record for record in rulesList if len(record)>0]
+    # #print(itemSupportTable)
+    # pprint.pprint(rules_no_empty)
 
 
 if __name__ == '__main__':
