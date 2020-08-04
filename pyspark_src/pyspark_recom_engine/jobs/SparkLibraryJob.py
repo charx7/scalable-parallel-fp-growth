@@ -11,27 +11,27 @@ from pyspark.sql.functions import udf, array
 
 from pyspark.ml.fpm import FPGrowth
 
-
 def main():
+    # Read from the transactions database and transactions collection, this will
+    # generate a Dataframe object
     print("Reading from transactions db... \n")
     transactions_data = spark_session.read \
         .format("com.mongodb.spark.sql.DefaultSource") \
         .option("database", "transactions") \
         .option("collection", "transactions") \
         .load()
-    print(type(transactions_data))
+    print('Our read transactions are of the type: ',type(transactions_data), '\n')
 
     print("The generated transactions schema is: \n")
     transactions_data.printSchema()
-    print("The show data is: \n")
+    print("The data fetched from the dbb is: \n")
     transactions_data.show()
-    print("Showing the column of product code lists")
+    
     product_codes = transactions_data.select("ProductCode")
-    product_codes.show()
     fpGrowth = FPGrowth(itemsCol="ProductCode",
-                        minSupport=0.0007, minConfidence=0.05)
-    print(type(fpGrowth))
-
+                        minSupport=0.0001, minConfidence=0.05)
+    
+    print('Fitting the model...')
     model = fpGrowth.fit(product_codes)
 
     # Display frequent itemsets.
@@ -52,7 +52,6 @@ def main():
         .option("collection", "recommendations") \
         .mode("append") \
         .save()
-
 
 if __name__ == '__main__':
     # There is a bug that doesnt pass spark session objects when called from another func
