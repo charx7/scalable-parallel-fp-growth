@@ -14,7 +14,15 @@ Afterwards, you need to make sure the data is inside of the
 mongo volume if you haven't done so. There are two volumes, mongodb and mongodb_config.
 The data should be inside of the mongodb volume.
 
-Then, submit the application from the pyspark src.
+Make sure you are inside a virtual environment with `pyspark` and `wheel` installed. Before you build or submit the application.
+
+```
+python3 -m venv spark-env
+pip install wheel
+pip install pyspark
+```
+
+Then, whilst on the venv, submit the application from the pyspark src.
 
 ```
 make submit-app

@@ -1,20 +1,16 @@
+# Own imports
 from pyspark_recom_engine.spark import get_spark, test_import
 from pyspark_recom_engine.utils.dataframeUdfs import list_sorter
-from pyspark_recom_engine.fpGrowth.fpGrowthAlgo import CreateTree, mainMerge, CreateLocalTree
-from pyspark_recom_engine.fpGrowth.fpGrowthLastSteps import find_values, generatePowerset, generate_association_rules
 from pyspark_recom_engine.fpGrowth.fpGrowthParallel import mapTransactions, getConditionalItems, generateRules
-# Own imports
-#from pyspark_recom_engine import list_sorter
+
 import json
 import pprint
-#import pandas as pd
 import time
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import IntegerType, ArrayType, StringType, MapType
 from pyspark.sql import functions as F
 from pyspark.sql.functions import udf, array
-
 
 def main():
     '''
@@ -30,26 +26,24 @@ def main():
 
     print("The generated transactions schema is: \n")
     transactions_data.printSchema()
-    print("The show data is: \n")
+
+    print("The data from the dbb is: \n")
     transactions_data.show()
     
-    # size of using a build in func
-    transactions_data.withColumn("no_of_transactions", F.size("ProductCode"))
-
-    # Use udf to define a row-at-a-time udf
+    # Use an udf to define a row-at-a-time udf
     countTransactions = udf(lambda x: len(x), IntegerType())
     # Apply the function
     transactions_with_count = transactions_data.select(
         'TransactionID',
         'ProductCode',
-        countTransactions('ProductCode').alias('no_of_transactions2')
+        countTransactions('ProductCode').alias('no_of_transactions')
     )
 
     # Explode the transactions list (will generate a column for each item in a transaction)
     exploded_transactions = transactions_with_count.select(
         'TransactionID',
         'ProductCode',
-        'no_of_transactions2',
+        'no_of_transactions',
         F.explode_outer('ProductCode').alias('individual_items')
     )
     print('The exploded transactions data is: \n')
@@ -123,9 +117,10 @@ def main():
     # Map step to the resulting dataframe 
     flattenedMappedProducts = sorted_data.select(
         'OrderedProductCode').rdd \
-            .flatMap(lambda x: mapTransactions(header_table,x.OrderedProductCode)) \
-            #.flatMap(lambda x: x) \
-            #.map(lambda x: x[0])
+            .flatMap(lambda x: mapTransactions(header_table,x.OrderedProductCode)) 
+
+    print('The flattened Mapped products rdd is: ', flattenedMappedProducts.take(20))
+
     end = time.time()
     print('Time Elapsed: ', end - start)
     print('######### End Map phase ###############')
@@ -134,18 +129,18 @@ def main():
     start = time.time()
     # Intersection method
     reducedProducts = flattenedMappedProducts.reduceByKey(lambda x, y: x + y)
+    print('The reduced products rdd is: ', reducedProducts.take(1))
+
     # Get conditional items (fp-tree)
     countThreshold = round(threshold * noOfTransactions)
     conditionalPatterns = reducedProducts.map(lambda x: getConditionalItems(x, countThreshold))
+    print('The conditional patterns rdd is: ', conditionalPatterns.take(20))
 
-    # Ascend tree method
-    #reducedProducts = flattenedMappedProducts.groupByKey().map(lambda x:(x[0], list(x[1])))
-    #localTrees = reducedProducts.map(lambda x: CreateLocalTree(x[1], 3))
-    
     end = time.time()
     print('Time Elapsed: ', end - start)
     print('######### End Reduce phase ###############')
     
+    # pretty print the conditional patterns
     #pprint.pprint(conditionalPatterns.take(700))
 
     # Collect the second list to pass the rule generating func
@@ -159,9 +154,11 @@ def main():
     collectedItemSupportTableFreqs = [
         row.asDict()['count'] for row in collected_item_support_table_freqs
     ]
-    # Pretty print
-    print('The collected item support table: ')
     itemSupportTable = dict(zip(collectedItemSupportTableNames, collectedItemSupportTableFreqs))
+    # Pretty print
+    print('The first element of the collected item support table is: key ',
+     next(iter(itemSupportTable)), ' with value: ', itemSupportTable[next(iter(itemSupportTable))])
+    
     
     # Rule generation mapper
     print('######### Start Second Map phase #############')

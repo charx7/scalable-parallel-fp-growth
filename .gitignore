@@ -1,4 +1,5 @@
 /data/*
+/agg_global_data/
 pyspark_src/dist/
 pyspark_src/build/
 *.egg-info
