@@ -52,6 +52,7 @@ submit-stream:
 	@docker build --rm -f ./pyspark_src/Dockerfile-Stream -t submit-stream-job ./pyspark_src
 	@echo "Image built, now running the submit container" 
 	@docker run --rm --name pyspark-stream -e ENABLE_INIT_DAEMON=false -p 4040:4040 --network spark-network submit-stream-job
+
 clean-cluster:
 	@echo "Removing containers..."
 	@docker stop spark-master

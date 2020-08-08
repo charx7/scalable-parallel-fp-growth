@@ -1,14 +1,4 @@
-import json
-import pprint
-import os
-#import pandas as pd
-import time
-from pyspark.sql import SparkSession, SQLContext
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.types import IntegerType, ArrayType, StringType, MapType
-from pyspark.sql import functions as F
-from pyspark.sql.functions import udf, array
-
+from pyspark.sql import SparkSession
 from pyspark.ml.fpm import FPGrowth
 
 def main():
