@@ -138,3 +138,16 @@ mongorestore --drop -d transactions .
 ```
 
 - Verify that the db has been restored using the mongo shell.
+
+## Set-up Mongo ETL
+Run the docker container with a volume pointing to the one created by docker-compose (you have to have run docker-compose before so that the volume get created first)
+```
+docker run --rm --name spark-mongo -p 27017:27017 -v /var/lib/docker/volumes/scalable-computing-recom-engine_mongodb/_data:/data/db/ -d mongo
+``` 
+Then run the execute command to verify that you have access to the collections inside the volume
+```
+docker exec -it spark-mongo /bin/bash
+mongo
+show dbs
+```
+At the end remove the created container
